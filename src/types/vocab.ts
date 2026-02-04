@@ -5,12 +5,19 @@ export interface DifyWorkflowResponse {
     workflow_id: string;
     status: string;
     outputs: {
-      res: string;
+      res?: string;
     };
     error: string | null;
     elapsed_time: number;
     total_tokens: number;
   };
+}
+
+export interface DifyWorkflowResponseRes {
+  status: "success" | "corrected" | "invalid";
+  original_input: string;
+  corrected_word: string | null;
+  content: WordContent | null;
 }
 
 // The structured data inside the JSONB column
@@ -31,6 +38,14 @@ export interface VocabEntry {
   word: string;
   content: WordContent;
   created_at: string;
+}
+
+export interface VocabEntryDTO {
+  meta: Pick<
+    DifyWorkflowResponseRes,
+    "status" | "original_input" | "corrected_word"
+  >;
+  data: VocabEntry;
 }
 
 export type CacheWord = Record<string, WordContent>;

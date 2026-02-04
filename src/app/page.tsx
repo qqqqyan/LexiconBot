@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 import {
   Book,
   Plus,
@@ -36,7 +37,7 @@ import type {
   WordContent,
 } from "../types";
 import type { ViewMode } from "./type";
-
+import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 // --- Components ---
 
 export const VocabNotebookPage: React.FC = () => {
@@ -74,13 +75,13 @@ export const VocabNotebookPage: React.FC = () => {
       setLoading(true);
       try {
         const res = await fetchVocabListAction();
-        if (res.success && res.data) {
+        if (res.success) {
           setWords(res.data);
         } else {
-          console.error(res.error);
+          toast.error(UI_ERROR_MESSAGES[res.errorCode]);
         }
-      } catch (err) {
-        console.error("Failed to fetch vocabulary:", err);
+      } catch {
+        toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
       } finally {
         setLoading(false);
       }
@@ -90,13 +91,13 @@ export const VocabNotebookPage: React.FC = () => {
       setLoading(true);
       try {
         const res = await fetchStoryListAction();
-        if (res.success && res.data) {
+        if (res.success) {
           setStories(res.data);
         } else {
-          console.error(res.error);
+          toast.error(UI_ERROR_MESSAGES[res.errorCode]);
         }
-      } catch (err) {
-        console.error("Failed to fetch vocabulary:", err);
+      } catch {
+        toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
       } finally {
         setLoading(false);
       }
@@ -143,15 +144,17 @@ export const VocabNotebookPage: React.FC = () => {
         ? fetchVocabDetailAction
         : fetchStoryDetailAction;
       const res = await fetchAction(id);
-      if (res.success && res.data) {
+      if (res.success) {
         if (isWord) {
           setCacheWords((prev) => ({ ...prev, [id]: res.data.content }));
         } else {
           setCacheStories((prev) => ({ ...prev, [id]: res.data.content }));
         }
+      } else {
+        toast.error(UI_ERROR_MESSAGES[res.errorCode]);
       }
     } catch {
-      console.error("Failed to load details");
+      toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
     } finally {
       setIsLoadingDetail(false);
     }
@@ -171,19 +174,41 @@ export const VocabNotebookPage: React.FC = () => {
 
   const handleAddWord = async () => {
     const newWord = newWordInput.trim();
-    if (!newWord) return;
+    if (!newWord) {
+      toast.warning("请输入要添加的单词");
+      return;
+    }
+    if (newWord.length > 24) {
+      toast.warning("单词过长，请控制在24个字符以内");
+      return;
+    }
+    if (!/^[a-zA-Z\s\-\']+$/.test(newWord)) {
+      toast.warning("格式错误，请仅输入英文单词或短语");
+      return;
+    }
     setIsGenerating(true);
     try {
       const res = await processVocabAction(newWord);
-      if (res.success && res.data) {
-        setWords((prev) => [res.data, ...prev]);
+      if (res.success) {
+        const { meta, data } = res.data;
+        if (meta.status === "corrected" && meta.corrected_word) {
+          toast.info(
+            `输入的单词 "${meta.original_input}" 已被更正为 "${meta.corrected_word}" 并添加到词库中。`,
+          );
+        }
+        setWords((prev) => [data, ...prev]);
         setIsAddModalOpen(false);
         setNewWordInput("");
-        setViewMode({ type: "word", id: res.data.id });
-        setCacheWords((prev) => ({ ...prev, [res.data.id]: res.data.content }));
+        setViewMode({ type: "word", id: data.id });
+        setCacheWords((prev) => ({
+          ...prev,
+          [data.id]: data.content,
+        }));
+      } else {
+        toast.error(UI_ERROR_MESSAGES[res.errorCode]);
       }
-    } catch (err) {
-      console.error("Failed to add word:", err);
+    } catch {
+      toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
     } finally {
       setIsGenerating(false);
     }
@@ -198,7 +223,7 @@ export const VocabNotebookPage: React.FC = () => {
     setIsLoadingDetail(true);
     try {
       const res = await generateAndSaveStoryAction(selectedWordIdsArr);
-      if (res.success && res.data) {
+      if (res.success) {
         setStories((prev) => [res.data, ...prev]);
         setSelectedWordIds(new Set());
         setIsHistoryOpen(true); // Switch to history view to see it in list
@@ -207,9 +232,11 @@ export const VocabNotebookPage: React.FC = () => {
           ...prev,
           [res.data.id]: res.data.content,
         }));
+      } else {
+        toast.error(UI_ERROR_MESSAGES[res.errorCode]);
       }
-    } catch (err) {
-      console.error("Failed to add word:", err);
+    } catch {
+      toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
     } finally {
       setIsLoadingDetail(false);
     }

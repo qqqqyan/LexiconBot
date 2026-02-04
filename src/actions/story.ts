@@ -7,14 +7,20 @@ import {
   saveStoryService,
 } from "@/services/storyDb";
 import { supabaseServer } from "@/lib/supabase";
+import { AppError } from "@/lib/errors";
+import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
+import { success, failure } from "./type";
 
 // 获取故事列表
 export async function fetchStoryListAction() {
   try {
     const data = await getStoryListService();
-    return { success: true, data };
+    return success(data);
   } catch (error) {
-    return { success: false, error: "获取故事列表失败" };
+    if (error instanceof AppError) {
+      return failure(error.code);
+    }
+    return failure(DOMAIN_ERRORS.UNKNOWN_ERROR);
   }
 }
 
@@ -22,9 +28,12 @@ export async function fetchStoryListAction() {
 export async function fetchStoryDetailAction(id: string) {
   try {
     const data = await getStoryByIdService(id);
-    return { success: true, data };
+    return success(data);
   } catch (error) {
-    return { success: false, error: "获取故事详情失败" };
+    if (error instanceof AppError) {
+      return failure(error.code);
+    }
+    return failure(DOMAIN_ERRORS.UNKNOWN_ERROR);
   }
 }
 
@@ -39,7 +48,10 @@ export async function generateAndSaveStoryAction(selectedWordIds: string[]) {
       .in("id", selectedWordIds);
 
     if (!wordsData || wordsData.length === 0) {
-      throw new Error("未找到选中的单词");
+      throw new AppError(
+        "can't find the words selected",
+        DOMAIN_ERRORS.STORY_GET_DETAIL_FAILED,
+      );
     }
 
     const wordStrings = wordsData.map((w) => w.word);
@@ -50,7 +62,7 @@ export async function generateAndSaveStoryAction(selectedWordIds: string[]) {
     // C. 解析 Dify 的输出 (正则切割)
     // 期望格式: [TITLE]: ... \n [STORY]: ...
     const titleMatch = rawOutput.match(/\[TITLE\]:\s*(.+)/);
-    const storyMatch = rawOutput.match(/\[STORY\]:\s*([\s\S]*)/); // [\s\S] 匹配包括换行符的所有字符
+    const storyMatch = rawOutput.match(/\[STORY\]:\s*([\s\S]*)/);
 
     const title = titleMatch ? titleMatch[1].trim() : "Untitled Story";
     const content = storyMatch ? storyMatch[1].trim() : rawOutput;
@@ -63,9 +75,11 @@ export async function generateAndSaveStoryAction(selectedWordIds: string[]) {
       wordStrings,
     );
 
-    return { success: true, data: savedStory };
+    return success(savedStory);
   } catch (error) {
-    console.error("Story Generation Error:", error);
-    return { success: false, error: "故事生成失败" };
+    if (error instanceof AppError) {
+      return failure(error.code);
+    }
+    return failure(DOMAIN_ERRORS.UNKNOWN_ERROR);
   }
 }

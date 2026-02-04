@@ -1,115 +1,45 @@
-import { WordContent, DifyWorkflowResponse } from "@/types";
+import { DifyWorkflowResponse, DifyWorkflowResponseRes } from "@/types";
+import { SystemError, AppError } from "@/lib/errors";
+import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
+import { DIFY_CODES } from "@/lib/constants/vendor-codes";
+
+const DIFY_API_URL = process.env.DIFY_API_URL || "http://localhost:8080/v1";
 
 /**
  * 辅助函数：清洗 AI 返回的 JSON 字符串
- * AI 经常会返回 ```json {...} ``` 格式，需要去掉 Markdown 标记
  */
 function cleanJsonString(rawString: string): string {
   if (!rawString) return "{}";
-  // 1. 去掉 ```json 和 ``` 包裹
-  const clean = rawString.replace(/```json\s*/g, "").replace(/```\s*/g, "");
-  // 2. 去掉首尾可能的空白字符
-  return clean.trim();
+  return rawString
+    .replace(/```json\s*/g, "")
+    .replace(/```\s*/g, "")
+    .trim();
 }
 
-export async function fetchWordFromDify(word: string): Promise<WordContent> {
-  const VOCAB_DIFY_API_KEY = process.env.VOCAB_DIFY_API_KEY;
-  const DIFY_API_URL = process.env.DIFY_API_URL || "http://localhost:8080/v1";
-
-  if (!VOCAB_DIFY_API_KEY) {
-    throw new Error("Missing VOCAB_DIFY_API_KEY in environment variables");
+/**
+ * 核心通用函数：调用 Dify Workflow
+ * 负责处理 HTTP 请求、鉴权、基础错误拦截 (429/500) 和原始数据提取
+ */
+async function callDifyWorkflow(
+  apiKey: string | undefined,
+  inputs: Record<string, string>,
+  logContext: string, // 用于日志，区分是请求单词还是故事
+): Promise<string> {
+  if (!apiKey) {
+    throw new Error(`Missing Dify API Key for ${logContext}`);
   }
 
   try {
-    console.log(`[Dify Service] Requesting workflow for: ${word}`);
+    console.log(`[Dify Service] Requesting ${logContext}...`);
 
     const response = await fetch(`${DIFY_API_URL}/workflows/run`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${VOCAB_DIFY_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        inputs: {
-          word_or_phrase: word, // 对应你 Dify 里的输入变量名
-        },
-        response_mode: "blocking",
-        user: "abc-123", // 建议后续换成真实的用户 ID
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Dify API Error (${response.status}): ${errorText}`);
-    }
-
-    const resJson: DifyWorkflowResponse = await response.json();
-
-    // ---------------------------------------------------------
-    // 关键步骤：解析 Dify 的输出
-    // ---------------------------------------------------------
-    // Dify Workflow 的结果在 data.outputs 里。
-    // 具体的 key 取决于你在 Dify "结束" 节点设置的变量名 (例如 text, result, output 等)
-    // 这里我们做一个防错处理：取 outputs 里的第一个 value，或者尝试找 'text' / 'result'
-    const outputs = resJson.data.outputs;
-
-    console.log(outputs);
-    if (!outputs) {
-      throw new Error("Dify workflow returned no outputs");
-    }
-
-    // 尝试获取原始 JSON 字符串
-    // 假设你的 Workflow 输出变量名为 'result' 或 'text'，或者直接取第一个非空值
-    const rawAiContent = outputs["res"];
-
-    if (typeof rawAiContent !== "string") {
-      // 如果 Dify 直接返回了 JSON 对象（没被 stringify），那最好不过
-      if (typeof rawAiContent === "object") {
-        return rawAiContent as WordContent;
-      }
-      throw new Error("Unknown output format from Dify");
-    }
-
-    // 清洗并解析 JSON
-    const cleanString = cleanJsonString(rawAiContent);
-    const parsedData = JSON.parse(cleanString) as WordContent;
-
-    return parsedData;
-  } catch (error) {
-    console.error("[Dify Service] Failed to fetch word:", error);
-    throw error;
-  }
-}
-
-export async function generateStoryFromDify(words: string[]): Promise<string> {
-  const DIFY_API_KEY = process.env.STORY_DIFY_API_KEY;
-  // 这里的 URL 需要指向你的 Dify 实例，通常是以 /v1 结尾
-  const DIFY_API_URL = process.env.DIFY_API_URL || "http://localhost:8080/v1";
-
-  if (!DIFY_API_KEY) {
-    throw new Error("Missing DIFY_API_KEY in environment variables");
-  }
-
-  // 1. 构造 Prompt 输入
-  // 确保这里的 key (selected_words) 与你在 Dify "开始" 节点里定义的变量名完全一致！
-  const inputs = {
-    selected_words: words.join(", "),
-  };
-
-  try {
-    console.log(
-      `[Dify Story Service] Generating story for words: ${words.join(", ")}`,
-    );
-
-    // 2. 发起请求
-    const response = await fetch(`${DIFY_API_URL}/workflows/run`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${DIFY_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: inputs,
+        inputs,
         response_mode: "blocking",
         user: "abc-123",
       }),
@@ -117,42 +47,83 @@ export async function generateStoryFromDify(words: string[]): Promise<string> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Dify API Error (${response.status}): ${errorText}`);
-    }
-
-    // 3. 解析响应
-    const resJson: DifyWorkflowResponse = await response.json();
-    const outputs = resJson.data.outputs;
-
-    if (!outputs) {
-      throw new Error(
-        "Dify workflow returned no outputs. Check your Workflow 'End' node.",
+      throw new SystemError(
+        `Dify API Error (${response.status}): ${errorText}`,
       );
     }
 
-    // 4. 提取内容 (容错处理)
-    let rawContent = outputs["res"];
+    const resJson: DifyWorkflowResponse = await response.json();
+    const errorMsg = resJson.data.error;
 
-    if (typeof rawContent !== "string") {
-      if (typeof rawContent === "object" && rawContent !== null) {
-        rawContent = rawContent || JSON.stringify(rawContent);
-      } else {
-        throw new Error(
-          `Dify output format error: expected string, got ${typeof rawContent}`,
+    if (errorMsg) {
+      if (errorMsg.includes(DIFY_CODES.RATE_LIMIT)) {
+        throw new AppError(
+          `Dify Workflow Rate Limited`,
+          DOMAIN_ERRORS.QUOTA_EXCEEDED,
         );
       }
+      if (errorMsg.includes(DIFY_CODES.PLUGIN_UNAVAILABLE)) {
+        throw new AppError(
+          `Dify AI Service Unavailable`,
+          DOMAIN_ERRORS.AI_PLUGIN_UNAVAILABLE,
+        );
+      }
+      throw new SystemError(
+        `Dify Workflow Response Error (${resJson.data.error})`,
+      );
     }
 
-    // 5. 简单的清洗 (去除可能的首尾引号)
-    let cleanContent = rawContent.trim();
-    cleanContent = cleanContent
-      .replace(/^```(markdown)?/i, "")
-      .replace(/```$/, "")
-      .trim();
+    const rawAiContent = resJson.data.outputs.res;
+    if (!rawAiContent) {
+      throw new AppError(
+        `Dify Workflow Outputs Empty`,
+        DOMAIN_ERRORS.VOCAB_AI_GENERATION_FAILED,
+      );
+    }
 
-    return cleanContent;
+    console.log(
+      `[Dify Service] Response for ${logContext}: ${rawAiContent.slice(0, 150)}`,
+    );
+    return rawAiContent;
   } catch (error) {
-    console.error("[Dify Story Service] Failed to generate story:", error);
-    throw error;
+    if (error instanceof AppError || error instanceof SystemError) {
+      throw error;
+    }
+    throw new SystemError(`Dify Workflow Request Error (${error})`);
   }
+}
+
+// ------------------------------------------------------------------
+// 业务函数
+// ------------------------------------------------------------------
+
+// 获取单词详情（需要 JSON 解析）
+export async function fetchWordFromDify(
+  word: string,
+): Promise<DifyWorkflowResponseRes> {
+  const rawContent = await callDifyWorkflow(
+    process.env.VOCAB_DIFY_API_KEY,
+    { word_or_phrase: word },
+    "word",
+  );
+
+  try {
+    const cleanString = cleanJsonString(rawContent);
+    return JSON.parse(cleanString) as DifyWorkflowResponseRes;
+  } catch (error) {
+    throw new AppError(
+      `Dify Outputs Parse Failed (${error})`,
+      DOMAIN_ERRORS.VOCAB_GENERATION_PARSE_FAILED,
+    );
+  }
+}
+
+// 生成故事（直接返回字符串）
+export async function generateStoryFromDify(words: string[]): Promise<string> {
+  // 直接调用通用层并返回结果，无需 JSON 解析
+  return await callDifyWorkflow(
+    process.env.STORY_DIFY_API_KEY,
+    { selected_words: words.join(", ") },
+    "story",
+  );
 }

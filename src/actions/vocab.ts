@@ -1,20 +1,27 @@
 "use server";
 
 import { fetchWordFromDify } from "@/services/dify";
+import { AppError } from "@/lib/errors";
 import {
   getWordFromDb,
   saveWordToDb,
   getVocabByIdService,
   getVocabListService,
 } from "@/services/vocabDb";
+import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
+import { success, failure } from "./type";
+import { VocabEntryDTO } from "@/types";
 
 // 获取vocab列表
 export async function fetchVocabListAction() {
   try {
     const data = await getVocabListService();
-    return { success: true, data };
+    return success(data);
   } catch (error) {
-    return { success: false, error: "无法获取单词列表" };
+    if (error instanceof AppError) {
+      return failure(error.code);
+    }
+    return failure(DOMAIN_ERRORS.UNKNOWN_ERROR);
   }
 }
 
@@ -22,28 +29,63 @@ export async function fetchVocabListAction() {
 export async function fetchVocabDetailAction(id: string) {
   try {
     const data = await getVocabByIdService(id);
-    return { success: true, data };
+    return success(data);
   } catch (error) {
-    return { success: false, error: "获取故事详情失败" };
+    if (error instanceof AppError) {
+      return failure(error.code);
+    }
+    return failure(DOMAIN_ERRORS.UNKNOWN_ERROR);
   }
 }
 
 // 生成并保存vocab
 export async function processVocabAction(word: string) {
   try {
+    let WordDataDTO: VocabEntryDTO;
+
     // 1. 查库
     const cached = await getWordFromDb(word);
-    if (cached) return { success: true, data: cached, source: "db" };
+    if (cached) {
+      WordDataDTO = {
+        meta: {
+          status: "success",
+          original_input: cached.word,
+          corrected_word: null,
+        },
+        data: cached,
+      };
+      return success(WordDataDTO);
+    }
 
     // 2. 调 AI
     const aiData = await fetchWordFromDify(word);
 
-    // 3. 存库
-    const wordData = await saveWordToDb(word, aiData);
+    if (aiData.status === "invalid") {
+      return failure(DOMAIN_ERRORS.VOCAB_INVALID_INPUT);
+    }
 
-    return { success: true, data: wordData };
+    if (!aiData.content) {
+      return failure(DOMAIN_ERRORS.VOCAB_AI_GENERATION_FAILED);
+    }
+
+    // 3. 存库
+    const correctedWord = aiData.corrected_word || word;
+    const wordData = await saveWordToDb(correctedWord, aiData.content);
+
+    // 4. 返回
+    WordDataDTO = {
+      meta: {
+        status: aiData.status,
+        original_input: aiData.original_input,
+        corrected_word: aiData.corrected_word,
+      },
+      data: wordData,
+    };
+    return success(WordDataDTO);
   } catch (error) {
-    console.error("BFF Error:", error);
-    return { success: false, error: "处理失败" };
+    if (error instanceof AppError) {
+      return failure(error.code);
+    }
+    return failure(DOMAIN_ERRORS.UNKNOWN_ERROR);
   }
 }
