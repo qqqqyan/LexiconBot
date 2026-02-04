@@ -1,0 +1,223 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 单词故事生成
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.7.3@0cefce9c5152b4fce7a7a630004bd753000966de117d1e992b7439271d48969a
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1769934823579-source-1769935629579-target
+      source: '1769934823579'
+      sourceHandle: source
+      target: '1769935629579'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1769935629579-source-1769935836057-target
+      source: '1769935629579'
+      sourceHandle: source
+      target: '1769935836057'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: selected_words
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: selected_words
+      height: 109
+      id: '1769934823579'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+            thinking_mode: false
+          mode: chat
+          name: gemini-2.5-flash
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 7de14a6d-6695-42d6-9a6b-56cd5ab5cca7
+          role: system
+          text: '# Role
+
+            You are a Cross-Cultural Communication Expert and a Sociolinguist. Your
+            expertise lies in explaining how specific English vocabulary reflects
+            Western social norms, cultural nuances, and real-world logic.
+
+
+            # Task
+
+            1. **Analyze**: Examine the provided vocabulary to identify their common
+            themes (e.g., workplace dynamics, social etiquette, financial systems,
+            or emotional nuances).
+
+            2. **Context Selection**: Select a highly realistic, "slice-of-life" scenario
+            where these words would naturally and frequently co-occur.
+
+            3. **Write**: Create a contextual narrative (150-250 words) that demonstrates
+            the "logic" behind these words, helping a non-native speaker understand
+            *when* and *why* they are used.
+
+
+            # Constraints
+
+            1. **Realism Over Fiction**: Avoid dramatic "novel" plots. Focus on realistic
+            daily scenarios (e.g., a performance review, a housewarming party, a medical
+            consultation, or a grocery run).
+
+            2. **Cultural Insight**: Ensure the narrative reflects authentic Western
+            social behaviors and mindsets.
+
+            3. **Highlighting**: **Bold** the target words within the text.
+
+            4. **Tone**: Informative, realistic, and clear.
+
+
+            # Output Format (Strictly Follow)
+
+            [TITLE]: <A clear name for the selected context, e.g., "The Complexity
+            of Modern Workplace Etiquette">
+
+            [STORY]:
+
+            <Insert the contextual narrative here. Focus on the interplay between
+            the words. Use Markdown bolding for target words.>'
+        - id: c47aec73-720a-4edf-a48f-2fa59e1f7b8e
+          role: user
+          text: '# Inputs Target Words: {{{#1769934823579.selected_words#}}'
+        selected: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769935629579'
+      position:
+        x: 382
+        y: 282
+      positionAbsolute:
+        x: 382
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1769935629579'
+          - text
+          value_type: string
+          variable: res
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1769935836057'
+      position:
+        x: 684
+        y: 282
+      positionAbsolute:
+        x: 684
+        y: 282
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -193
+      y: 103.5
+      zoom: 1
+  rag_pipeline_variables: []

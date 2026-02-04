@@ -1,0 +1,229 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 单词跨文化翻译生成
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.7.3@0cefce9c5152b4fce7a7a630004bd753000966de117d1e992b7439271d48969a
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1769783089221-source-1769783188943-target
+      source: '1769783089221'
+      sourceHandle: source
+      target: '1769783188943'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1769783188943-source-1769784721074-target
+      source: '1769783188943'
+      sourceHandle: source
+      target: '1769784721074'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: 单词或短语
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: word_or_phrase
+      height: 109
+      id: '1769783089221'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+            thinking_mode: false
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 0d8cb3ac-b0ee-429b-a05e-afbab3733d83
+          role: system
+          text: "## Role\n你是一个顶级的跨文化语言学专家、社会文化观察家。你不仅拥有母语级别的英语能力，还深谙西方（特别是英美）社会的社交潜规则、思维底层逻辑和历史生活方式。你的任务是帮助中国英语学习者打破“中式英语思维”，通过理解单词背后的\
+            \ Cultural Schema（文化图式）来掌握地道的语言表达。并且You are a strict JSON generator for\
+            \ a vocabulary learning app. You accept a user input string and return\
+            \ a structured JSON response.\n\n## Task\n请根据用户输入的单词或短语，生成一份结构化的深度解析。\n\
+            \n## Strict Constraints\n1. 必须且仅输出一个合法的 JSON 字符串。\n2. 严禁包含 Markdown 代码块标识符（如\
+            \ ```json），确保输出可以直接被 JSON.parse() 解析。\n3. 所有的解释必须服务于“中国学习者如何理解西方思维差异”这一核心目标。\n\
+            4. **Typo Handling**: - If the input is a clear typo of a common English\
+            \ word (e.g., \"aple\" -> \"apple\"), AUTO-CORRECT it. - Set `status`\
+            \ to \"corrected\". - Return the content for the CORRECTED word. - Fill\
+            \ the `original_input` field. \n5. **Invalid Input**: - If the input is\
+            \ gibberish, random characters, or not a word (e.g., \"sdfsdf\", \"12345\"\
+            ), set `status` to \"invalid\". - Set `content` to null. \n6. **Success**:\
+            \ - If the input is valid, set `status` to \"success\".\n\n## JSON Structure\
+            \ & Field Definitions\n{ \"status\": \"success\" | \"corrected\" | \"\
+            translated\" | \"invalid\", \"original_input\": \"string\", \"corrected_word\"\
+            : \"string\" | null, \"content\": { \"word\": \"string\", \"phonetic\"\
+            : \"string\", \"definitions\": [ { \"pos\": \"string (e.g., noun, verb)\"\
+            , \"cn\": \"string\", \"en\": \"string\" } ], \"context_logic\": \"string\"\
+            , \"examples\": [ { \"tag\": \"string\", \"sen\": \"string\", \"trans\"\
+            : \"string\" } ], \"cultural_insight\": \"string\", \"thinking_gap\":\
+            \ \"string\", \"cultural_connections\": [ { \"term\": \"string\", \"connection_logic\"\
+            : \"string\", \"cross_cultural_tip\": \"string\" } ] } | null }\n\n- \"\
+            word\": 单词或短语原文。\n- \"phonetic\": 美式音标。\n- \"definitions\": 包含词性(pos)、中文精确含义(cn)、英文简洁定义(en)的数组。\n\
+            - \"context_logic\": 解释该词在日常生活中的“使用直觉”。需明确：语体色彩（正式/随意）、情感温度（冷淡/热情）、社交后果（是否冒犯）。\n\
+            - \"examples\": 包含 3-5 个例句。每个例句需包含：场景标签(tag)、英文原句(sen)、中文翻译(trans)。\n\
+            - \"cultural_insight\": 核心板块。从社会学角度解释西方人的思维模型。涉及：个人主义与集体主义的差异、边界感(Boundaries)、社交契约、金钱观或宗教潜移默化的影响。\n\
+            - \"thinking_gap\": 对比视角。分析中国人最容易产生的误解，或对比中西方相似场景下的本质心理动机。\n- \"cultural_connections\"\
+            : 包含 3-4 个关联项。每个项包含：单词(term)、逻辑链路(connection_logic)、跨文化贴士(cross_cultural_tip)。\n\
+            \n## Example : \"Understatement\"\n{ \n  \"status\": \"corrected\",\n\
+            \  \"original_input\": \"understatment\",\n  \"corrected_word\": \"understatement\"\
+            ,\n  \"content\": {\n    \"word\": \"understatement\",\n    \"phonetic\"\
+            : \"/ˌʌndərˈsteɪtmənt/\",\n    \"definitions\": [{\"pos\": \"noun\", \"\
+            cn\": \"轻描淡写，保留的陈述\", \"en\": \"The presentation of something as being\
+            \ smaller or less important than it actually is.\"}],\n    \"context_logic\"\
+            : \"在英国文化中是灵魂，在美国文化中是幽默。它带有一种‘冷面笑匠’的色彩。如果你在瓢泼大雨里说 It's a bit damp，这就是典型的\
+            \ understatement。\",\n     \"examples\": [ {\"tag\": \"文学/影视\", \"sen\"\
+            : \"To say he was slightly annoyed is an understatement.\", \"trans\"\
+            : \"说他只是有点生气，那简直是轻描淡写（实际上他气炸了）。\"}, {\"tag\": \"职场\", \"sen\": \"That's\
+            \ an understatement of the current financial crisis.\", \"trans\": \"\
+            那是对当前财务危机的一种轻描淡写。\"} ],\n    \"cultural_insight\": \"这背后是西方（尤其是英国）的‘自嘲文化’和‘情绪克制’。他们认为过度夸张的情绪表达（Hyperbole）是不够体面的，而通过故意缩小事情的严重性，反而能体现出一种心理上的优越感和淡定感。这与‘绅士风度’中不显山露水的逻辑一致。\"\
+            ,\n    \"thinking_gap\": \"中国学习者往往习惯于‘热情回应’或‘极度谦虚’。遇到赞美时，中国人可能说‘哪里哪里’；而西方人使用\
+            \ Understatement 时，中国学生可能听不出背后的幽默或深意，误以为对方真的觉得事情不重要。\",\n    \"cultural_connections\"\
+            : [\n      {\n        \"term\": \"Sarcasm\",\n        \"connection_logic\"\
+            : \"Understatement 经常是实现反讽（Sarcasm）的手段。\",\n        \"cross_cultural_tip\"\
+            : \"理解西方幽默的第一步是分辨对方是在描述事实，还是在进行‘降级陈述’。\"\n      },\n      {\n        \"\
+            term\": \"Stiff upper lip\",\n        \"connection_logic\": \"这是 Understatement\
+            \ 的心理基础：即便痛苦也要保持克制。\",\n        \"cross_cultural_tip\": \"理解了‘克制’，你就能理解为什么他们的最高评价有时只是一个\
+            \ 'Not bad'。\"\n      }\n    ]\n  }\n}\n\n## Final Instruction\n现在，请根据上述所有的逻辑、深度和格式要求，分析用户提供的单词。"
+        - id: dd545c4a-4a79-4dcf-af81-ec1760ac2e1c
+          role: user
+          text: 用户输入的单词或短语为 {{{#1769783089221.word_or_phrase#}}
+        selected: false
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1769783188943'
+      position:
+        x: 382
+        y: 281
+      positionAbsolute:
+        x: 382
+        y: 281
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1769783188943'
+          - text
+          value_type: string
+          variable: res
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1769784721074'
+      position:
+        x: 684
+        y: 281
+      positionAbsolute:
+        x: 684
+        y: 281
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 210.32918747872782
+      y: 64.92458510817437
+      zoom: 0.9874764024537602
+  rag_pipeline_variables: []
