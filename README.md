@@ -26,3 +26,6 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
 
 - **v0.3.0 (2026-02-04)**
   - [Feature] 引入技术模式，针对技术专有名词提供 ELI5 解释、职场场景模拟等。
+
+- **v0.4.0 (2026-02-04)**
+  - [Infra] 部署到 Vercel，并控制访问。

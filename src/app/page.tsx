@@ -45,11 +45,8 @@ import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 // --- Components ---
 
 export const VocabNotebookPage: React.FC = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   // Get current type from URL, default to 'culture'
-  const currentType = (searchParams.get("type") as VocabType) || "culture";
+  const [currentType, setCurrentType] = useState<VocabType>("culture");
 
   // Global Data State
   const [words, setWords] = useState<VocabListItem[]>([]);
@@ -184,7 +181,7 @@ export const VocabNotebookPage: React.FC = () => {
 
   const handleTypeSwitch = (newType: VocabType) => {
     // Update URL
-    router.push(`?type=${newType}`);
+    setCurrentType(newType);
 
     // Clear state (except word list, which will be reloaded by useEffect)
     setCacheWords({});
