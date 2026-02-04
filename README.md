@@ -23,3 +23,6 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
   - [Feature] 非预期输入处理，支持 AI 自动拼写纠错与异常输入拦截。
   - [UI] 反馈机制。
   - [Structure] 新增目录存储 Dify 工作流 XML 导出文件。
+
+- **v0.3.0 (2026-02-04)**
+  - [Feature] 引入技术模式，针对技术专有名词提供 ELI5 解释、职场场景模拟等。

@@ -1,4 +1,4 @@
-import { DifyWorkflowResponse, DifyWorkflowResponseRes } from "@/types";
+import { DifyWorkflowResponse, DifyWorkflowResponseRes, VocabType } from "@/types";
 import { SystemError, AppError } from "@/lib/errors";
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { DIFY_CODES } from "@/lib/constants/vendor-codes";
@@ -126,4 +126,35 @@ export async function generateStoryFromDify(words: string[]): Promise<string> {
     { selected_words: words.join(", ") },
     "story",
   );
+}
+
+// 获取技术单词详情（需要 JSON 解析）
+export async function fetchTechWordFromDify(
+  word: string,
+): Promise<DifyWorkflowResponseRes> {
+  const rawContent = await callDifyWorkflow(
+    process.env.TECH_DIFY_API_KEY,
+    { word_or_phrase: word },
+    "tech word",
+  );
+
+  try {
+    const cleanString = cleanJsonString(rawContent);
+    return JSON.parse(cleanString) as DifyWorkflowResponseRes;
+  } catch (error) {
+    throw new AppError(
+      `Dify Tech Outputs Parse Failed (${error})`,
+      DOMAIN_ERRORS.VOCAB_GENERATION_PARSE_FAILED,
+    );
+  }
+}
+
+// 统一调度函数：根据类型调用对应的工作流
+export async function fetchWordByType(
+  word: string,
+  type: VocabType,
+): Promise<DifyWorkflowResponseRes> {
+  return type === "culture"
+    ? fetchWordFromDify(word)
+    : fetchTechWordFromDify(word);
 }

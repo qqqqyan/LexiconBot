@@ -1,6 +1,6 @@
 "use server";
 
-import { fetchWordFromDify } from "@/services/dify";
+import { fetchWordByType } from "@/services/dify";
 import { AppError } from "@/lib/errors";
 import {
   getWordFromDb,
@@ -10,12 +10,12 @@ import {
 } from "@/services/vocabDb";
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { success, failure } from "./type";
-import { VocabEntryDTO } from "@/types";
+import { VocabEntryDTO, VocabType } from "@/types";
 
 // 获取vocab列表
-export async function fetchVocabListAction() {
+export async function fetchVocabListAction(type: VocabType) {
   try {
-    const data = await getVocabListService();
+    const data = await getVocabListService(type);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -39,12 +39,12 @@ export async function fetchVocabDetailAction(id: string) {
 }
 
 // 生成并保存vocab
-export async function processVocabAction(word: string) {
+export async function processVocabAction(word: string, type: VocabType) {
   try {
     let WordDataDTO: VocabEntryDTO;
 
     // 1. 查库
-    const cached = await getWordFromDb(word);
+    const cached = await getWordFromDb(word, type);
     if (cached) {
       WordDataDTO = {
         meta: {
@@ -58,7 +58,7 @@ export async function processVocabAction(word: string) {
     }
 
     // 2. 调 AI
-    const aiData = await fetchWordFromDify(word);
+    const aiData = await fetchWordByType(word, type);
 
     if (aiData.status === "invalid") {
       return failure(DOMAIN_ERRORS.VOCAB_INVALID_INPUT);
@@ -70,7 +70,7 @@ export async function processVocabAction(word: string) {
 
     // 3. 存库
     const correctedWord = aiData.corrected_word || word;
-    const wordData = await saveWordToDb(correctedWord, aiData.content);
+    const wordData = await saveWordToDb(correctedWord, type, aiData.content);
 
     // 4. 返回
     WordDataDTO = {

@@ -1,0 +1,255 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 技术单词上下文生成
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.7.3@0cefce9c5152b4fce7a7a630004bd753000966de117d1e992b7439271d48969a
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1770196588948-source-1770196590606-target
+      source: '1770196588948'
+      sourceHandle: source
+      target: '1770196590606'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1770196590606-source-1770196659990-target
+      source: '1770196590606'
+      sourceHandle: source
+      target: '1770196659990'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: word_or_phrase
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: word_or_phrase
+      height: 109
+      id: '1770196588948'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+            thinking_mode: false
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 5d774e86-1662-4473-9f01-bb230358e959
+          role: system
+          text: "Role\nYou are a Senior Tech Lead and Cross-Cultural Technical Communications\
+            \ Expert with 10+ years of experience in Silicon Valley.  Your mission\
+            \ is to help developers from Chinese-speaking backgrounds transition into\
+            \ international work environments by bridging the gap in technical mental\
+            \ models, professional jargon, and workplace etiquette. You are a strict\
+            \ JSON generator for a technical vocabulary app.\n\nTask\nAnalyze the\
+            \ user-provided technical term and generate a structured JSON response\
+            \ that facilitates a \"Technical Migration\"—moving from Chinese engineering\
+            \ concepts to idiomatic English professional communication.\n\nStrict\
+            \ Constraints\nOutput Format: Output ONLY a valid JSON string. Do NOT\
+            \ include Markdown code block identifiers (e.g., ```json). The output\
+            \ must be directly parseable by JSON.parse().\nTechnical Depth: Explanations\
+            \ must be engineering-focused. Avoid generic dictionary definitions. Focus\
+            \ on how the term is used in actual system design, code reviews, and architectural\
+            \ discussions.\nTypo Handling: If the input is a typo of a common tech\
+            \ term (e.g., \"agant\" -> \"agent\"), AUTO-CORRECT it.Set status to \"\
+            corrected\".Return content for the CORRECTED word and fill original_input.\n\
+            Invalid Input: If the input is gibberish, not related to tech, or random\
+            \ characters, set status to \"invalid\" and content to null.\nSuccess:\
+            \ If valid, set status to \"success\".\n\nJSON Structure & Field Definitions\n\
+            {\n  \"status\": \"success\" | \"corrected\" | \"invalid\",\n  \"original_input\"\
+            : \"string\",\n  \"corrected_word\": \"string | null\",\n  \"content\"\
+            : {\n    \"word\": \"string\",\n    \"phonetic\": \"string\",\n    \"\
+            definitions\": [{ \"pos\": \"string\", \"cn\": \"string\", \"en\": \"\
+            string\" }],\n    \"tech_logic\": { \"eli5\": \"string\", \"context\"\
+            : \"professional tone/usage\" },\n    \"migration_bridge\": { \"cn_term\"\
+            : \"string\", \"mental_shift\": \"CN vs EN perception\", \"nuance\": \"\
+            subtle traps\" },\n    \"scenarios\": [\n      { \"type\": \"Daily Standup\"\
+            , \"sen\": \"string\", \"tip\": \"etiquette\" },\n      { \"type\": \"\
+            System Design\", \"sen\": \"string\", \"tip\": \"trade-offs\" },\n   \
+            \   { \"type\": \"Code Review\", \"sen\": \"string\", \"tip\": \"critique\"\
+            \ }\n    ],\n    \"collocations\": [{ \"phrase\": \"verb/adj + term\"\
+            , \"note\": \"usage\" }]\n  } | null\n}\n\ntech_logic: Contains an \"\
+            ELI5\" (Explain Like I'm 5) for the core technical concept and \"context_logic\"\
+            \ explaining the professional tone (e.g., is it a buzzword, a formal architectural\
+            \ term, or casual dev slang).\nmigration_bridge: Maps the Chinese tech\
+            \ term (cn_term) to the English one. mental_shift explains the difference\
+            \ in how Chinese vs. Western engineers perceive the concept. nuance highlights\
+            \ subtle traps (e.g., \"Automation\" vs. \"Agency\").\nscenarios: Provides\
+            \ 3 mandatory simulation sentences for Daily Standup, System Design, and\
+            \ Code Review. tip explains the etiquette or communication goal of that\
+            \ specific sentence.\ncollocations: 3-5 high-frequency Verb+Noun or Adjective+Noun\
+            \ pairs to help the user sound like a \"Native Senior Engineer.\"\n\n\
+            Example: \"Agentic Workflow\"\n{ \"status\": \"success\", \"original_input\"\
+            : \"Agentic Workflow\", \"corrected_word\": null, \"content\": { \"word\"\
+            : \"Agentic Workflow\", \"phonetic\": \"/əˈdʒen.tɪk ˈwɜːrk.floʊ/\", \"\
+            definitions\": [ { \"pos\": \"noun\", \"cn\": \"智能体工作流\", \"en\": \"An\
+            \ iterative design pattern where AI agents autonomously plan and execute\
+            \ tasks through loops and tool-usage.\" } ], \"tech_logic\": { \"eli5\"\
+            : \"Instead of just asking an AI a question once, you give it a loop where\
+            \ it can think, use a search tool, find an error, and try again until\
+            \ it gets it right.\", \"context_logic\": \"High-level architectural term\
+            \ popular in AI engineering (Agentic AI). Sounds very forward-thinking\
+            \ and sophisticated in meetings.\" }, \"migration_bridge\": { \"cn_term\"\
+            : \"自动化流程 / 智能体编排\", \"mental_shift\": \"Chinese devs often focus on 'Automation'\
+            \ (saving labor), while English context emphasizes 'Agency' (the ability\
+            \ of the AI to reason and make decisions independently).\", \"nuance\"\
+            : \"Don't just say 'AI automation'; say 'Agentic orchestration' to sound\
+            \ more senior.\" }, \"scenarios\": [ { \"type\": \"Daily Standup\", \"\
+            sen\": \"I'm currently refactoring the data pipeline into an agentic workflow\
+            \ to handle edge cases autonomously.\", \"tip\": \"Focus on progress and\
+            \ the 'autonomous' value-add.\" }, { \"type\": \"System Design\", \"sen\"\
+            : \"Should we implement a linear chain or a more agentic workflow for\
+            \ this multi-step reasoning task?\", \"tip\": \"Use this to discuss trade-offs\
+            \ between speed and reliability.\" }, { \"type\": \"Code Review\", \"\
+            sen\": \"The error handling here could be improved by making the workflow\
+            \ more agentic—letting the model self-correct.\", \"tip\": \"Suggests\
+            \ a higher-level architectural improvement.\" } ], \"collocations\": [\
+            \ { \"phrase\": \"Orchestrate an agentic workflow\", \"note\": \"Professional\
+            \ verb for managing complex flows.\" }, { \"phrase\": \"Iterative agentic\
+            \ pattern\", \"note\": \"Describing the 'loop' nature of the work.\" },\
+            \ { \"phrase\": \"Agentic self-correction\", \"note\": \"Key benefit of\
+            \ this workflow.\" } ] } }\n\nFinal Instruction\nAnalyze the user-provided\
+            \ technical term according to the logic, depth, and strict JSON format\
+            \ described above."
+        - id: 4b365cdf-1d24-4611-9cc9-53958c29235a
+          role: user
+          text: 用户输入的单词或短语为 {{#1770196588948.word_or_phrase#}}
+        selected: false
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1770196590606'
+      position:
+        x: 381
+        y: 281
+      positionAbsolute:
+        x: 381
+        y: 281
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1770196590606'
+          - text
+          value_type: string
+          variable: res
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1770196659990'
+      position:
+        x: 682
+        y: 281
+      positionAbsolute:
+        x: 682
+        y: 281
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -470.5
+      y: -60
+      zoom: 1
+  rag_pipeline_variables: []

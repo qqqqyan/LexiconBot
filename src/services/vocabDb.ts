@@ -2,15 +2,16 @@ import { supabaseServer } from "@/lib/supabase";
 import { AppError, SystemError } from "@/lib/errors";
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { SUPABASE_CODES } from "@/lib/constants/vendor-codes";
-import { WordContent, VocabEntry } from "@/types";
+import { WordContent, VocabEntry, VocabType } from "@/types";
 
 const VOCAB_TABLE_NAME = process.env.VOCAB_TABLE_NAME || "";
 
-export async function getWordFromDb(word: string) {
+export async function getWordFromDb(word: string, type: VocabType) {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
     .select("*")
     .eq("word", word)
+    .eq("type", type)
     .maybeSingle();
 
   if (error) throw new SystemError(error);
@@ -35,11 +36,12 @@ export async function getVocabByIdService(id: string) {
 
 export async function saveWordToDb(
   word: string,
+  type: VocabType,
   content: WordContent,
 ): Promise<VocabEntry> {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
-    .insert([{ word, content }])
+    .insert([{ word, type, content }])
     .select()
     .single();
 
@@ -48,10 +50,11 @@ export async function saveWordToDb(
   return data as VocabEntry;
 }
 
-export async function getVocabListService() {
+export async function getVocabListService(type: VocabType) {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
     .select("id, word, created_at")
+    .eq("type", type)
     .order("created_at", { ascending: false });
 
   if (error) throw new SystemError(error);
