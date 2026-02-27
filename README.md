@@ -29,3 +29,7 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
 
 - **v0.4.0 (2026-02-04)**
   - [Infra] 部署到 Vercel，并控制访问。
+
+- **v0.5.0 (2026-02-27)**
+  - [feat] 引入 Vitest 测试框架，新增 74 个单元/组件测试覆盖 services、actions、lib 以及页面交互层。
+  - [docs] 新增供 AI 阅读的文档。

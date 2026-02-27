@@ -6,7 +6,7 @@ import {
   getStoryByIdService,
   saveStoryService,
 } from "@/services/storyDb";
-import { supabaseServer } from "@/lib/supabase";
+import { getWordsByIdsService } from "@/services/vocabDb";
 import { AppError } from "@/lib/errors";
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { success, failure } from "./type";
@@ -42,19 +42,7 @@ export async function generateAndSaveStoryAction(selectedWordIds: string[]) {
   try {
     // A. 预处理：根据 ID 查出单词原文 (Word Strings)
     // 不信任前端传来的字符串
-    const { data: wordsData } = await supabaseServer
-      .from("cultural-vocabulary")
-      .select("word")
-      .in("id", selectedWordIds);
-
-    if (!wordsData || wordsData.length === 0) {
-      throw new AppError(
-        "can't find the words selected",
-        DOMAIN_ERRORS.STORY_GET_DETAIL_FAILED,
-      );
-    }
-
-    const wordStrings = wordsData.map((w) => w.word);
+    const wordStrings = await getWordsByIdsService(selectedWordIds);
 
     // B. 调用 Dify 生成
     const rawOutput = await generateStoryFromDify(wordStrings);
