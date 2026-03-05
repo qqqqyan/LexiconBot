@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Book,
   Plus,

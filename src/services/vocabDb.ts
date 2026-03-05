@@ -50,24 +50,6 @@ export async function saveWordToDb(
   return data as VocabEntry;
 }
 
-export async function getWordsByIdsService(ids: string[]): Promise<string[]> {
-  const { data, error } = await supabaseServer
-    .from(VOCAB_TABLE_NAME)
-    .select("word")
-    .in("id", ids);
-
-  if (error) throw new SystemError(error);
-
-  if (!data || data.length === 0) {
-    throw new AppError(
-      "can't find the words selected",
-      DOMAIN_ERRORS.STORY_GET_WORDS_FAILED,
-    );
-  }
-
-  return data.map((w) => w.word);
-}
-
 export async function getVocabListService(type: VocabType) {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
