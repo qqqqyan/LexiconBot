@@ -346,8 +346,8 @@ export default function ReviewPage() {
 
     return (
       <div className="relative w-full max-w-3xl mx-auto perspective-1000">
-        {/* Progress Bar */}
-        <div className="absolute -top-12 left-0 right-0 flex items-center gap-4 text-slate-400 text-sm font-medium">
+        {/* Progress Bar: inline on mobile, absolute on desktop */}
+        <div className="flex items-center gap-4 text-slate-400 text-sm font-medium mb-4 md:mb-0 md:absolute md:-top-12 md:left-0 md:right-0">
           <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-indigo-500 transition-all duration-300 ease-out"
@@ -360,43 +360,52 @@ export default function ReviewPage() {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-12 md:p-20 text-center border border-slate-100 relative overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-20 text-center border border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
-          <h1 className="text-6xl md:text-7xl font-black text-slate-900 mb-8 tracking-tight">
+          <h1 className="text-4xl md:text-7xl font-black text-slate-900 mb-6 md:mb-8 tracking-tight">
             {currentWord.word}
           </h1>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-3 gap-4 md:gap-8 mt-12">
+          <div className="grid grid-cols-3 gap-3 md:gap-8 mt-8 md:mt-12">
             <button
               onClick={() => handleOption(REVIEW_STATUS.KNOWN)}
-              className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-100 hover:border-emerald-300 transition-all"
+              className="group flex flex-col items-center gap-2 md:gap-3 p-3 md:p-6 rounded-xl md:rounded-2xl bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-100 hover:border-emerald-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Check className="w-6 h-6" strokeWidth={3} />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Check className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
               </div>
-              <span className="font-bold text-emerald-800">Know</span>
+              <span className="font-bold text-emerald-800 text-sm md:text-base">
+                Know
+              </span>
             </button>
 
             <button
               onClick={() => handleOption(REVIEW_STATUS.VAGUE)}
-              className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-100 hover:border-amber-300 transition-all"
+              className="group flex flex-col items-center gap-2 md:gap-3 p-3 md:p-6 rounded-xl md:rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-100 hover:border-amber-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <HelpCircle className="w-6 h-6" strokeWidth={3} />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <HelpCircle className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
               </div>
-              <span className="font-bold text-amber-800">Vague</span>
+              <span className="font-bold text-amber-800 text-sm md:text-base">
+                Vague
+              </span>
             </button>
 
             <button
               onClick={() => handleOption(REVIEW_STATUS.UNKNOWN)}
-              className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-rose-50 hover:bg-rose-100 border-2 border-rose-100 hover:border-rose-300 transition-all"
+              className="group flex flex-col items-center gap-2 md:gap-3 p-3 md:p-6 rounded-xl md:rounded-2xl bg-rose-50 hover:bg-rose-100 border-2 border-rose-100 hover:border-rose-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <AlertCircle className="w-6 h-6" strokeWidth={3} />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <AlertCircle
+                  className="w-5 h-5 md:w-6 md:h-6"
+                  strokeWidth={3}
+                />
               </div>
-              <span className="font-bold text-rose-800">Don&apos;t Know</span>
+              <span className="font-bold text-rose-800 text-sm md:text-base">
+                Don&apos;t Know
+              </span>
             </button>
           </div>
         </div>
@@ -452,7 +461,7 @@ export default function ReviewPage() {
     const accuracy = Math.round((correctCount / results.length) * 100) || 0;
 
     return (
-      <div className="max-w-4xl mx-auto w-full animate-in fade-in slide-in-from-bottom-8 duration-500">
+      <div className="max-w-4xl mx-auto w-full animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24 md:pb-0">
         <div className="text-center mb-10">
           <h2 className="text-4xl font-bold text-slate-900 mb-2">
             Review Complete!
@@ -540,16 +549,17 @@ export default function ReviewPage() {
           </div>
         </div>
 
-        <div className="flex gap-4 mt-8 justify-center">
+        {/* Mobile: fixed bottom bar / Desktop: inline */}
+        <div className="fixed bottom-0 left-0 right-0 z-10 flex gap-3 p-4 bg-white/90 backdrop-blur-sm border-t border-slate-100 md:static md:bg-transparent md:border-0 md:p-0 md:mt-8 md:justify-center md:backdrop-blur-none">
           <button
             onClick={restart}
-            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
+            className="flex-1 md:flex-none px-6 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-4 h-4" /> Review Again
           </button>
           <button
             onClick={onExit}
-            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+            className="flex-1 md:flex-none px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
           >
             Back to Notebook
           </button>

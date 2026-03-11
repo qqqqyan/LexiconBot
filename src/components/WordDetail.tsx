@@ -180,7 +180,7 @@ export const WordDetail: React.FC<WordDetailProps> = ({ id }) => {
               {wordEntry.cultural_connections.map((conn, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col bg-white p-2.5 md:p-3 rounded-lg border border-slate-200 shadow-sm max-w-44 md:max-w-50"
+                  className="flex flex-col bg-white p-2.5 md:p-3 rounded-lg border border-slate-200 shadow-sm max-w-full md:max-w-50"
                 >
                   <span className="font-bold text-sm md:text-base text-slate-800 border-b border-slate-100 pb-1 mb-1">
                     {conn.term}

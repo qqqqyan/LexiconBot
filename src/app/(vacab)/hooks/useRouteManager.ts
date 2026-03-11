@@ -58,11 +58,20 @@ export function useRouteManager() {
     [pathname, router],
   );
 
+  // C. 关闭详情 (移除 id，保留当前 view/type，移动端返回列表用)
+  const closeDetail = useCallback(() => {
+    const params = new URLSearchParams();
+    params.set("view", urlState.view);
+    params.set("type", urlState.type);
+    router.push(`${pathname}?${params.toString()}`);
+  }, [pathname, router, urlState.view, urlState.type]);
+
   return {
     urlState, // 供右侧判断或高亮当前选中项使用
     browseState, // 供左侧控制列表数据和 UI 切换使用
     changeBrowseView,
     changeBrowseType,
     openDetail,
+    closeDetail,
   };
 }

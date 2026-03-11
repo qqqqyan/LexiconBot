@@ -14,6 +14,7 @@ import {
   ArrowLeftRight,
   Loader2,
   Brain,
+  ChevronLeft,
 } from "lucide-react";
 import {
   generateAndSaveStoryAction,
@@ -40,6 +41,7 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
     changeBrowseView,
     changeBrowseType,
     openDetail,
+    closeDetail,
   } = useRouteManager();
   const router = useRouter();
 
@@ -361,8 +363,13 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
         onAddWordSuccess={handleAddWordSuccess}
       />
 
-      {/* --- Left Sidebar --- */}
-      <div className="w-80 shrink-0 flex flex-col border-r border-slate-200 bg-white h-full relative z-10 shadow-sm">
+      {/* --- Left Sidebar: 移动端有 activeId 时隐藏，桌面端始终显示 --- */}
+      <div
+        className={`
+        w-full md:w-80 shrink-0 flex flex-col border-r border-slate-200 bg-white h-full relative z-10 shadow-sm
+        ${activeId ? "hidden md:flex" : "flex"}
+      `}
+      >
         {/* Dynamic List Area */}
         {renderSidebarContent()}
 
@@ -421,22 +428,40 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
         </div>
       </div>
 
-      {/* --- Right Content --- */}
-      <div className="flex-1 h-full overflow-y-auto bg-slate-50/50 p-6 md:p-10 scroll-smooth">
-        {!activeId ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
-            <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center">
-              <Book className="w-10 h-10 text-slate-400" />
-            </div>
-            <p className="text-lg font-medium">
-              Select a word or story to view details
-            </p>
-          </div>
-        ) : currentBrowseView === "story" ? (
-          storyDetailSlot
-        ) : (
-          <WordDetail id={activeId} />
+      {/* --- Right Content: 移动端无 activeId 时隐藏，桌面端始终显示 --- */}
+      <div
+        className={`
+        flex-1 h-full overflow-y-auto bg-slate-50/50 scroll-smooth relative
+        ${!activeId ? "hidden md:block" : "block"}
+      `}
+      >
+        {/* 移动端返回按钮：fixed 在顶部 */}
+        {activeId && (
+          <button
+            onClick={closeDetail}
+            className="md:hidden fixed top-0 left-0 right-0 z-20 w-full flex items-center gap-1 px-4 py-3 text-sm text-slate-500 hover:text-slate-700 border-b border-slate-100 bg-white/90 backdrop-blur-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
         )}
+
+        <div className="pt-12 md:pt-0 p-6 md:p-10">
+          {!activeId ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+              <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center">
+                <Book className="w-10 h-10 text-slate-400" />
+              </div>
+              <p className="text-lg font-medium">
+                Select a word or story to view details
+              </p>
+            </div>
+          ) : currentBrowseView === "story" ? (
+            storyDetailSlot
+          ) : (
+            <WordDetail id={activeId} />
+          )}
+        </div>
       </div>
     </div>
   );
