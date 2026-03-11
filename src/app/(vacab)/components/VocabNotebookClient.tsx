@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Book,
@@ -12,18 +13,19 @@ import {
   FileText,
   ArrowLeftRight,
   Loader2,
+  Brain,
 } from "lucide-react";
 import {
   generateAndSaveStoryAction,
   fetchStoryListAction,
-} from "../../actions/story";
-import { fetchVocabListAction } from "../../actions/vocab";
-import type { StoryListItem, VocabListItem, VocabType } from "../../types";
+} from "@/actions/story";
+import { fetchVocabListAction } from "@/actions/vocab";
+import type { StoryListItem, VocabListItem, VocabType } from "@/types";
 import type { ViewState } from "../type";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 import { useRouteManager } from "../hooks/useRouteManager";
 import AddWordModal from "./AddWordModal";
-import RightPanel from "./RightPanel";
+import { WordDetail } from "@/components/WordDetail";
 
 // --- Components ---
 
@@ -39,13 +41,14 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
     changeBrowseType,
     openDetail,
   } = useRouteManager();
+  const router = useRouter();
 
   // Global Data State — 首次 mount 时客户端获取
   const [words, setWords] = useState<VocabListItem[]>([]);
   const [stories, setStories] = useState<StoryListItem[]>([]);
 
   // UI State
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedWordIds, setSelectedWordIds] = useState<Set<string>>(
     new Set(),
   );
@@ -59,9 +62,11 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
   const { type: currentBrowseType, view: currentBrowseView } = browseState;
   const { id: activeId } = urlState;
 
-  const filteredWords = words.filter((w) =>
-    w.word.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredWords = searchTerm
+    ? words.filter((w) =>
+        w.word.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : words;
 
   // Fetch Data — mount 时及用户切换 type 时请求
   useEffect(() => {
@@ -202,6 +207,15 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
                 {currentBrowseType === "culture" ? "Cultural" : "Technical"}
               </span>
               <ArrowLeftRight className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Review Button */}
+            <button
+              className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 transition-colors"
+              onClick={() => router.push("/review")}
+              title="Start Review"
+            >
+              <Brain className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -362,7 +376,7 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
                 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg transition-all transform
                 ${
                   selectedWordIds.size > 0
-                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:scale-[1.02] shadow-indigo-200"
+                    ? "bg-linear-to-r from-indigo-600 to-violet-600 text-white hover:scale-[1.02] shadow-indigo-200"
                     : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                 }
               `}
@@ -409,11 +423,20 @@ export const VocabNotebookClient: React.FC<Props> = ({ storyDetailSlot }) => {
 
       {/* --- Right Content --- */}
       <div className="flex-1 h-full overflow-y-auto bg-slate-50/50 p-6 md:p-10 scroll-smooth">
-        <RightPanel
-          currentBrowseView={currentBrowseView}
-          activeId={activeId}
-          storyDetailSlot={storyDetailSlot}
-        />
+        {!activeId ? (
+          <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+            <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center">
+              <Book className="w-10 h-10 text-slate-400" />
+            </div>
+            <p className="text-lg font-medium">
+              Select a word or story to view details
+            </p>
+          </div>
+        ) : currentBrowseView === "story" ? (
+          storyDetailSlot
+        ) : (
+          <WordDetail id={activeId} />
+        )}
       </div>
     </div>
   );

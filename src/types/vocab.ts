@@ -65,12 +65,14 @@ export interface TechContent extends BaseVocab {
 export type WordContent = CultureContent | TechContent;
 
 // Type guards
-export function isCultureContent(content: WordContent): content is CultureContent {
-  return 'cultural_insight' in content;
+export function isCultureContent(
+  content: WordContent,
+): content is CultureContent {
+  return "cultural_insight" in content;
 }
 
 export function isTechContent(content: WordContent): content is TechContent {
-  return 'tech_logic' in content;
+  return "tech_logic" in content;
 }
 
 // The database row shape (Entity)
@@ -80,6 +82,8 @@ export interface VocabEntry {
   type: VocabType;
   content: WordContent;
   created_at: string;
+  last_reviewed_at: string | null;
+  status: number[] | null;
 }
 
 export interface VocabEntryDTO {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { processVocabAction } from "../../actions/vocab";
+import { processVocabAction } from "@/actions/vocab";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { VocabListItem, VocabType } from "@/types/vocab";

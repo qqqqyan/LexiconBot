@@ -33,3 +33,8 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
 - **v0.5.0 (2026-03-05)**
   - [Refactor] 使用 URL 参数支持浏览器记录回溯，构建严格类型的路由管理器，将交互状态与 URL 路由映射。
   - [Refactor] 包含 markdown 的组件迁移至 RSC，提升 FCP。
+
+- **v0.6.0 (2026-03-11)**
+  - [Feature] 新增复习 Session 功能，支持序列或者随机选择单词进入复习流程。
+  - [Structure] 词汇相关页面迁移至 `(vacab)` 路由组，新增独立 `/review` 路由。
+  - [Refactor] 抽取 `WordDetail` 为共享组件，供词汇页与复习页复用。
