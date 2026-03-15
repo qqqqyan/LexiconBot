@@ -28,7 +28,7 @@ export async function fetchVocabListAction(type: VocabType) {
 }
 
 // 获取单个vocab详情
-export async function fetchVocabDetailAction(id: string) {
+export async function fetchVocabDetailAction(id: number) {
   try {
     const data = await getVocabByIdService(id);
     return success(data);

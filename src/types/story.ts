@@ -1,9 +1,9 @@
 // Story Table Structure
 export interface StoryEntry {
-  id: string;
+  id: number;
   title: string;
   content: string; // Markdown content
-  word_ids: string[];
+  word_ids: number[];
   word_list: string[];
   created_at: string;
 }

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import { VocabNotebookClient } from "./components/VocabNotebookClient";
+import { VocabView } from "./components/VocabView";
 import StoryDetailView from "./components/StoryDetailView";
 import type { AppView, RouteState } from "./type";
 
@@ -28,5 +28,5 @@ export default async function Page({ searchParams }: PageProps) {
       </Suspense>
     ) : null;
 
-  return <VocabNotebookClient storyDetailSlot={storyDetailSlot} />;
+  return <VocabView storyDetailSlot={storyDetailSlot} />;
 }

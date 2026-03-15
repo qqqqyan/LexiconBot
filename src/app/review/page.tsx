@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -29,7 +29,7 @@ import {
   fetchVocabListInfoAction,
   updateVocabReviewStatusAction,
 } from "@/actions/vocab";
-import { WordDetail } from "@/components/WordDetail";
+import { WordDetail } from "../(vacab)/components/WordDetail";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 import { completeSessionAction, startSessionAction } from "@/actions/review";
 
@@ -52,9 +52,9 @@ export default function ReviewPage() {
   });
   const [vocabType, setVocabType] = useState<VocabType>("culture");
   const [reviewMode, setReviewMode] = useState<ReviewMode>("random");
-  const [rangeStart, setRangeStart] = useState(1);
-  const [rangeEnd, setRangeEnd] = useState(1);
-  const [randomCount, setRandomCount] = useState(1);
+  const [rangeStart, setRangeStart] = useState(0);
+  const [rangeEnd, setRangeEnd] = useState(0);
+  const [randomCount, setRandomCount] = useState(0);
 
   // Review State
   const [sessionId, setSessionId] = useState<string>();
@@ -68,15 +68,15 @@ export default function ReviewPage() {
   // Loading
   const [isLoading, setIsLoading] = useState(false);
 
-  const vocabInfoRef = useRef(vocabInfo);
-
   useEffect(() => {
     try {
       fetchVocabListInfoAction().then((res) => {
         if (res.success) {
           const vocabInfo = res.data;
-          setVocabInfo(vocabInfo);
-          vocabInfoRef.current = vocabInfo;
+          setVocabInfo({
+            tech: 3,
+            culture: 112,
+          });
         } else {
           toast.error(UI_ERROR_MESSAGES[res.errorCode]);
         }
@@ -87,16 +87,22 @@ export default function ReviewPage() {
   }, []);
 
   useEffect(() => {
-    const initialCount = vocabInfoRef.current[vocabType];
-    setRangeEnd(Math.max(Math.min(initialCount, 10), 10));
-    setRandomCount(Math.max(Math.min(initialCount, 5), 5));
-  }, [vocabType]);
+    const initialCount = vocabInfo[vocabType];
+    setRangeEnd(Math.min(initialCount, 10));
+    setRandomCount(Math.min(initialCount, 5));
+  }, [vocabInfo, vocabType]);
 
   // --- Computed Values ---
 
   const currentVocabCount = vocabInfo[vocabType] || 0;
 
   // --- Helpers ---
+
+  const updateSelectedWords = () => {
+    const initialCount = vocabInfo[vocabType];
+    setRangeEnd(Math.min(initialCount, 10));
+    setRandomCount(Math.min(initialCount, 5));
+  };
 
   const onExit = () => {
     router.push("/"); // Navigate back to main notebook page
@@ -144,18 +150,19 @@ export default function ReviewPage() {
       const duration = Date.now() - sessionStartTime;
       setTotalDuration(duration);
 
-      if (!sessionId) {
-        return;
-      }
-      completeSessionAction(sessionId, duration)
-        .then((res) => {
+      if (!sessionId) return;
+
+      const reportCompleteSession = async () => {
+        try {
+          const res = await completeSessionAction(sessionId, duration);
           if (!res.success) {
             // TODO: 不成功时静默重试
           }
-        })
-        .catch(() => {
+        } catch {
           toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
-        });
+        }
+      };
+      reportCompleteSession();
     }
   };
 
@@ -169,15 +176,17 @@ export default function ReviewPage() {
     };
     setResults((prev) => [...prev, newResult]);
 
-    updateVocabReviewStatusAction(currentWord.id, status)
-      .then((res) => {
+    const reportVocabReviewStatus = async () => {
+      try {
+        const res = await updateVocabReviewStatusAction(currentWord.id, status);
         if (!res.success) {
           // TODO: 不成功时静默重试
         }
-      })
-      .catch(() => {
+      } catch {
         toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
-      });
+      }
+    };
+    reportVocabReviewStatus();
 
     if (status === REVIEW_STATUS.KNOWN) {
       moveToNext();

@@ -34,7 +34,7 @@ export async function getStoryByIdService(id: string) {
 export async function saveStoryService(
   title: string,
   content: string,
-  wordIds: string[],
+  wordIds: number[],
   wordList: string[],
 ) {
   const { data, error } = await supabaseServer

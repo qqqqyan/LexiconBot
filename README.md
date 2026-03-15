@@ -38,3 +38,11 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
   - [Feature] 新增复习 Session 功能，支持序列或者随机选择单词进入复习流程。
   - [Structure] 词汇相关页面迁移至 `(vacab)` 路由组，新增独立 `/review` 路由。
   - [Refactor] 抽取 `WordDetail` 为共享组件，供词汇页与复习页复用。
+
+- **v0.7.0 (2026-03-15)**
+  - [Refactor] 拆分 `VocabView` 为 `LeftSidebar`、`RightPanel`、`WordItem` 三层组件边界。
+  - [Perf] `WordItem` 引入 `React.memo` + boolean props，checkbox toggle 的 re-render 从 O(n) 降至 O(1)。
+  - [Perf] `RightPanel` 引入 `React.memo`，左侧任意状态变化不再触发 `WordDetail` 重绘。
+  - [Fix] story fetch effect 补全 stale-closure guard，修复快速切换视图时的竞态问题。
+  - [Refactor] loading 状态拆分为 `isLoadingWords` / `isLoadingStories`，消除两个 effect 的状态互踩。
+  - [Perf] `filteredWords` 改为 `useMemo`，checkbox toggle 不再触发列表重新过滤。

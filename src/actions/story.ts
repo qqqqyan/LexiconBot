@@ -38,7 +38,7 @@ export async function fetchStoryDetailAction(id: string) {
 }
 
 // 生成并保存故事
-export async function generateAndSaveStoryAction(selectedWordIds: string[]) {
+export async function generateAndSaveStoryAction(selectedWordIds: number[]) {
   try {
     // A. 预处理：根据 ID 查出单词原文 (Word Strings)
     // 不信任前端传来的字符串

@@ -17,7 +17,7 @@ import { fetchVocabDetailAction } from "@/actions/vocab";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 
 interface WordDetailProps {
-  id: string;
+  id: number;
 }
 
 export const WordDetail: React.FC<WordDetailProps> = ({ id }) => {
@@ -111,7 +111,7 @@ export const WordDetail: React.FC<WordDetailProps> = ({ id }) => {
       {isCultureContent(wordEntry) && (
         <>
           {/* Logic & Thinking Gap */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
             <section className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm border border-slate-100">
               <h2 className="text-xs font-bold uppercase tracking-wider text-blue-500 mb-2 md:mb-3 flex items-center gap-2">
                 <Brain className="w-3 h-3" /> Context Logic
@@ -176,11 +176,11 @@ export const WordDetail: React.FC<WordDetailProps> = ({ id }) => {
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 md:mb-4 flex items-center gap-2">
               <Link2 className="w-3 h-3" /> Connections
             </h2>
-            <div className="flex flex-wrap gap-2 md:gap-3">
+            <div className="flex flex-wrap gap-3">
               {wordEntry.cultural_connections.map((conn, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col bg-white p-2.5 md:p-3 rounded-lg border border-slate-200 shadow-sm max-w-full md:max-w-50"
+                  className="flex flex-col bg-white p-2.5 md:p-3 rounded-lg border border-slate-200 shadow-sm max-w-full md:max-w-47"
                 >
                   <span className="font-bold text-sm md:text-base text-slate-800 border-b border-slate-100 pb-1 mb-1">
                     {conn.term}

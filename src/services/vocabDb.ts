@@ -24,7 +24,7 @@ export async function getWordFromDb(word: string, type: VocabType) {
   return data as VocabEntry;
 }
 
-export async function getVocabByIdService(id: string) {
+export async function getVocabByIdService(id: number) {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
     .select("*")

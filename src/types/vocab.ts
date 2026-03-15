@@ -77,7 +77,7 @@ export function isTechContent(content: WordContent): content is TechContent {
 
 // The database row shape (Entity)
 export interface VocabEntry {
-  id: string;
+  id: number;
   word: string;
   type: VocabType;
   content: WordContent;

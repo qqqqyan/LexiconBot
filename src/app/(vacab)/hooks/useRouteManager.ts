@@ -14,7 +14,9 @@ export function useRouteManager() {
     view: (searchParams.get("view") as AppView) === "story" ? "story" : "vocab", // 默认为 vocab
     type:
       (searchParams.get("type") as VocabType) === "tech" ? "tech" : "culture", // 默认为 culture
-    id: searchParams.get("id") || null,
+    id: searchParams.get("id")
+      ? parseInt(searchParams.get("id") as string, 10)
+      : null,
   };
 
   // --- 2. 独立的浏览状态 (左侧边栏的缓存状态) ---
@@ -47,11 +49,11 @@ export function useRouteManager() {
 
   // B. 点击列表项 (生成并跳转到严格合法的 URL)
   const openDetail = useCallback(
-    (targetView: AppView, targetType: VocabType, targetId: string) => {
+    (targetView: AppView, targetType: VocabType, targetId: number) => {
       const params = new URLSearchParams();
       params.set("view", targetView);
       params.set("type", targetType); // 强制传以保证格式统一
-      params.set("id", targetId);
+      params.set("id", targetId.toString());
 
       router.push(`${pathname}?${params.toString()}`);
     },
