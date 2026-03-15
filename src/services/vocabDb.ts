@@ -123,7 +123,7 @@ export async function getReviewVocabListService(
 }
 
 export async function updateVocabReviewStatusService(
-  id: string,
+  id: number,
   newStatus: ReviewStatusValue,
 ) {
   const { error } = await supabaseServer.rpc("append_review_status", {

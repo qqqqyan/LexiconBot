@@ -3,7 +3,7 @@ import { fetchStoryDetailAction } from "@/actions/story";
 import { X } from "lucide-react";
 
 interface StoryDetailViewProps {
-  id: string;
+  id: number;
 }
 
 export default async function StoryDetailView({ id }: StoryDetailViewProps) {

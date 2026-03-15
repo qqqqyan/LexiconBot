@@ -106,7 +106,7 @@ export async function fetchVocabListInfoAction() {
 }
 
 export async function updateVocabReviewStatusAction(
-  id: string,
+  id: number,
   newStatus: ReviewStatusValue,
 ) {
   try {

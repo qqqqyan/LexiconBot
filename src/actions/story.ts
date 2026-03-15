@@ -25,7 +25,7 @@ export async function fetchStoryListAction() {
 }
 
 // 获取单个故事详情
-export async function fetchStoryDetailAction(id: string) {
+export async function fetchStoryDetailAction(id: number) {
   try {
     const data = await getStoryByIdService(id);
     return success(data);

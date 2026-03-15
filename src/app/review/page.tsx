@@ -34,7 +34,7 @@ import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 import { completeSessionAction, startSessionAction } from "@/actions/review";
 
 interface ReviewResult {
-  wordId: string;
+  wordId: number;
   word: string;
   status: ReviewStatusValue;
 }
@@ -73,10 +73,7 @@ export default function ReviewPage() {
       fetchVocabListInfoAction().then((res) => {
         if (res.success) {
           const vocabInfo = res.data;
-          setVocabInfo({
-            tech: 3,
-            culture: 112,
-          });
+          setVocabInfo(vocabInfo);
         } else {
           toast.error(UI_ERROR_MESSAGES[res.errorCode]);
         }
@@ -97,12 +94,6 @@ export default function ReviewPage() {
   const currentVocabCount = vocabInfo[vocabType] || 0;
 
   // --- Helpers ---
-
-  const updateSelectedWords = () => {
-    const initialCount = vocabInfo[vocabType];
-    setRangeEnd(Math.min(initialCount, 10));
-    setRandomCount(Math.min(initialCount, 5));
-  };
 
   const onExit = () => {
     router.push("/"); // Navigate back to main notebook page

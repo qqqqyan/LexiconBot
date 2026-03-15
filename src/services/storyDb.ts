@@ -15,7 +15,7 @@ export async function getStoryListService() {
   return data;
 }
 
-export async function getStoryByIdService(id: string) {
+export async function getStoryByIdService(id: number) {
   const { data, error } = await supabaseServer
     .from(STORY_TABLE_NAME)
     .select("*")
