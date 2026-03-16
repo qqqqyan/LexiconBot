@@ -46,3 +46,10 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
   - [Fix] story fetch effect 补全 stale-closure guard，修复快速切换视图时的竞态问题。
   - [Refactor] loading 状态拆分为 `isLoadingWords` / `isLoadingStories`，消除两个 effect 的状态互踩。
   - [Perf] `filteredWords` 改为 `useMemo`，checkbox toggle 不再触发列表重新过滤。
+
+- **v0.8.0 (2026-03-16)**
+  - [Refactor] 拆分 `review/page.tsx`（577行）为 `SetupPanel`、`ReviewPanel`、`SummaryPanel` 三个独立组件，`page.tsx` 缩减为纯 bridge（~88行）。
+  - [Refactor] `SetupPanel` 升级为 feature component，自持 `startSessionAction` 与 `fetchVocabListInfoAction`，通过 `onSessionStarted(SessionBridgeData)` 向上交付 session 数据。
+  - [Refactor] `ReviewPanel` 内化 `currentIndex`、`isDrawerOpen` 状态，以 `useRef` 累积 results（不触发 re-render），review 结束时一次性通过 `onComplete` 回传。
+  - [Refactor] `SummaryPanel` 为纯展示组件，以 `useMemo` 计算统计数据。
+  - [Type] 新增 `ReviewResult`、`SessionBridgeData` 类型；移除仅在 `SetupPanel` 内部使用的 `StartConfig`。
