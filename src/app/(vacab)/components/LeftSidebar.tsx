@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   Book,
@@ -42,7 +42,6 @@ export const LeftSidebar = function LeftSidebar({
   onChangeBrowseType,
   onOpenDetail,
 }: Props) {
-  const router = useRouter();
   const { view: currentBrowseView, type: currentBrowseType } = browseState;
 
   // --- Data State ---
@@ -251,13 +250,13 @@ export const LeftSidebar = function LeftSidebar({
                   </span>
                   <ArrowLeftRight className="w-3.5 h-3.5" />
                 </button>
-                <button
+                <Link
+                  href="/review"
                   className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 transition-colors"
-                  onClick={() => router.push("/review")}
                   title="Start Review"
                 >
                   <Brain className="w-5 h-5" />
-                </button>
+                </Link>
               </div>
             </div>
             <div className="relative flex items-center gap-2">

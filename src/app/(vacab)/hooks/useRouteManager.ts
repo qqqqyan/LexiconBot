@@ -1,23 +1,26 @@
 // src/hooks/useRouteManager.ts
-import { useState, useCallback } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
 import { AppView, RouteState, BrowseState } from "../type";
 import { VocabType } from "@/types/vocab";
 
-export function useRouteManager() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+const DEFAULT_URL_STATE: RouteState = { view: "vocab", type: "culture", id: null };
 
-  // --- 1. 严格解析 URL 状态 (右侧详情的真实状态) ---
-  const urlState: RouteState = {
-    view: (searchParams.get("view") as AppView) === "story" ? "story" : "vocab", // 默认为 vocab
-    type:
-      (searchParams.get("type") as VocabType) === "tech" ? "tech" : "culture", // 默认为 culture
-    id: searchParams.get("id")
-      ? parseInt(searchParams.get("id") as string, 10)
-      : null,
+function parseUrlSearch(search: string): RouteState {
+  const params = new URLSearchParams(search);
+  return {
+    view: params.get("view") === "story" ? "story" : "vocab",
+    type: params.get("type") === "tech" ? "tech" : "culture",
+    id: params.get("id") ? parseInt(params.get("id") as string, 10) : null,
   };
+}
+
+export function useRouteManager() {
+  // --- 1. URL 状态：SSR/客户端都用默认值初始化，挂载后再读实际 URL ---
+  const [urlState, setUrlState] = useState<RouteState>(DEFAULT_URL_STATE);
+
+  useEffect(() => {
+    setUrlState(parseUrlSearch(window.location.search));
+  }, []);
 
   // --- 2. 独立的浏览状态 (左侧边栏的缓存状态) ---
   const [browseState, setBrowseState] = useState<BrowseState>({
@@ -25,20 +28,9 @@ export function useRouteManager() {
     type: urlState.type,
   });
 
-  // --- 3. 初始化与对齐 (Reconciliation) ---
-  // 当用户首次通过带参数的 URL 进入，或者强刷新页面时，确保左侧的浏览状态与 URL 对齐。
-  // 注意：只在初始加载时对齐，后续 URL 改变不强制重置左侧的浏览 Tab，实现彻底解耦。
-  //   useEffect(() => {
-  //     setBrowseState({
-  //       tab: urlState.tab,
-  //       type: urlState.type,
-  //     });
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   }, []); // 仅挂载时执行一次
+  // --- 3. 状态操作方法 ---
 
-  // --- 4. 状态操作方法 (封装内部逻辑，暴露极简 API) ---
-
-  // A. 左侧切换 Tab 或 Type (仅改变本地状态，不影响右侧 URL)
+  // A. 左侧切换 Tab 或 Type (仅改变本地状态，不影响右侧)
   const changeBrowseView = useCallback((newView: AppView) => {
     setBrowseState((prev) => ({ ...prev, view: newView }));
   }, []);
@@ -47,30 +39,36 @@ export function useRouteManager() {
     setBrowseState((prev) => ({ ...prev, type: newType }));
   }, []);
 
-  // B. 点击列表项 (生成并跳转到严格合法的 URL)
+  // B. 点击列表项：更新 React 状态 + 同步地址栏
   const openDetail = useCallback(
     (targetView: AppView, targetType: VocabType, targetId: number) => {
+      const newState: RouteState = { view: targetView, type: targetType, id: targetId };
+      setUrlState(newState);
+
       const params = new URLSearchParams();
       params.set("view", targetView);
-      params.set("type", targetType); // 强制传以保证格式统一
+      params.set("type", targetType);
       params.set("id", targetId.toString());
-
-      router.push(`${pathname}?${params.toString()}`);
+      window.history.pushState(null, "", `${window.location.pathname}?${params.toString()}`);
     },
-    [pathname, router],
+    [],
   );
 
-  // C. 关闭详情 (移除 id，保留当前 view/type，移动端返回列表用)
+  // C. 关闭详情：更新 React 状态 + 同步地址栏
   const closeDetail = useCallback(() => {
-    const params = new URLSearchParams();
-    params.set("view", urlState.view);
-    params.set("type", urlState.type);
-    router.push(`${pathname}?${params.toString()}`);
-  }, [pathname, router, urlState.view, urlState.type]);
+    setUrlState((prev) => {
+      const next = { ...prev, id: null };
+      const params = new URLSearchParams();
+      params.set("view", prev.view);
+      params.set("type", prev.type);
+      window.history.pushState(null, "", `${window.location.pathname}?${params.toString()}`);
+      return next;
+    });
+  }, []);
 
   return {
-    urlState, // 供右侧判断或高亮当前选中项使用
-    browseState, // 供左侧控制列表数据和 UI 切换使用
+    urlState,
+    browseState,
     changeBrowseView,
     changeBrowseType,
     openDetail,

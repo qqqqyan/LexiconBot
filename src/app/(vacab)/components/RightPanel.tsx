@@ -3,19 +3,18 @@
 import React, { memo } from "react";
 import { Book, ChevronLeft } from "lucide-react";
 import { WordDetail } from "./WordDetail";
+import StoryDetailView from "./StoryDetailView";
 import type { AppView } from "../type";
 
 interface Props {
   activeId: number | null;
   browseView: AppView;
-  storyDetailSlot: React.ReactNode;
   onClose: () => void;
 }
 
 export const RightPanel = memo(function RightPanel({
   activeId,
   browseView,
-  storyDetailSlot,
   onClose,
 }: Props) {
   return (
@@ -45,9 +44,9 @@ export const RightPanel = memo(function RightPanel({
             </p>
           </div>
         ) : browseView === "story" ? (
-          storyDetailSlot
+          <StoryDetailView key={activeId} id={activeId} />
         ) : (
-          <WordDetail id={activeId} />
+          <WordDetail key={activeId} id={activeId} />
         )}
       </div>
     </div>

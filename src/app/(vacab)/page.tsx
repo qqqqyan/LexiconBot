@@ -1,32 +1,35 @@
-import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
-import { VocabView } from "./components/VocabView";
-import StoryDetailView from "./components/StoryDetailView";
-import type { AppView, RouteState } from "./type";
+"use client";
 
-interface PageProps {
-  searchParams: Promise<RouteState>;
-}
+import React from "react";
+import { useRouteManager } from "./hooks/useRouteManager";
+import { LeftSidebar } from "./components/LeftSidebar";
+import { RightPanel } from "./components/RightPanel";
 
-export default async function Page({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const view = (params.view as AppView) === "story" ? "story" : "vocab";
-  const id = params.id || null;
+export default function Page() {
+  const {
+    urlState,
+    browseState,
+    changeBrowseView,
+    changeBrowseType,
+    openDetail,
+    closeDetail,
+  } = useRouteManager();
 
-  const storyDetailSlot =
-    view === "story" && id ? (
-      <Suspense
-        key={id}
-        fallback={
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
-            <p className="text-lg font-medium">Loading story...</p>
-          </div>
-        }
-      >
-        <StoryDetailView id={id} />
-      </Suspense>
-    ) : null;
-
-  return <VocabView storyDetailSlot={storyDetailSlot} />;
+  return (
+    <div className="flex h-screen w-full bg-slate-50 text-slate-800 font-sans overflow-hidden">
+      <LeftSidebar
+        activeId={urlState.id}
+        browseState={browseState}
+        isVisible={!urlState.id}
+        onChangeBrowseView={changeBrowseView}
+        onChangeBrowseType={changeBrowseType}
+        onOpenDetail={openDetail}
+      />
+      <RightPanel
+        activeId={urlState.id}
+        browseView={urlState.view}
+        onClose={closeDetail}
+      />
+    </div>
+  );
 }
