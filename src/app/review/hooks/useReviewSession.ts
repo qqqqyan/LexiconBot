@@ -1,17 +1,13 @@
 "use client";
 
-import { useReducer, useEffect, useState } from "react";
-import {
-  ReviewSessionState,
-  ReviewAction,
-  ReviewInProgress,
-} from "../type";
+import { useReducer, useEffect, useState, startTransition } from "react";
+import { ReviewSessionState, ReviewAction, ReviewInProgress } from "../type";
 
 const STORAGE_KEY = "lexiconbot_review_session";
 
 function reducer(
   state: ReviewSessionState,
-  action: ReviewAction
+  action: ReviewAction,
 ): ReviewSessionState {
   switch (action.type) {
     case "START_SESSION":
@@ -35,7 +31,10 @@ function reducer(
     }
     case "UPDATE_ELAPSED":
       if (state.step !== "review") return state;
-      return { ...state, elapsedMs: state.elapsedMs + action.payload.elapsedDelta };
+      return {
+        ...state,
+        elapsedMs: state.elapsedMs + action.payload.elapsedDelta,
+      };
     case "COMPLETE_SESSION":
       if (state.step !== "review") return state;
       return {
@@ -55,7 +54,7 @@ function reducer(
 export function useReviewSession() {
   const [state, dispatch] = useReducer(reducer, { step: "setup" });
   const [savedSession, setSavedSession] = useState<ReviewInProgress | null>(
-    null
+    null,
   );
 
   // On mount, read localStorage once to check for an unfinished session
@@ -63,9 +62,9 @@ export function useReviewSession() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     try {
-      const parsed = JSON.parse(raw);
+      const parsed = JSON.parse(raw) as ReviewInProgress;
       if (parsed.step === "review") {
-        setSavedSession(parsed as ReviewInProgress);
+        startTransition(() => setSavedSession(parsed));
       }
     } catch {
       localStorage.removeItem(STORAGE_KEY);
@@ -80,6 +79,13 @@ export function useReviewSession() {
       localStorage.removeItem(STORAGE_KEY);
     }
   }, [state]);
+
+  // Once the user leaves setup (starts or resumes), the banner is no longer relevant
+  useEffect(() => {
+    if (state.step !== "setup") {
+      startTransition(() => setSavedSession(null));
+    }
+  }, [state.step]);
 
   return { state, dispatch, savedSession };
 }
