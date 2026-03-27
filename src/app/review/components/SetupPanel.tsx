@@ -1,21 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Settings, Play, Loader2 } from "lucide-react";
+import { X, Settings, Play, Loader2, RotateCcw } from "lucide-react";
 import { VocabType } from "@/types";
 import { fetchVocabListInfoAction } from "@/actions/vocab";
 import { startSessionAction } from "@/actions/review";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
 import { toast } from "sonner";
-import { ReviewMode, SessionBridgeData } from "../type";
+import { ReviewMode, SessionBridgeData, ReviewInProgress } from "../type";
 
 interface SetupPanelProps {
+  savedSession: ReviewInProgress | null;
   onSessionStarted: (data: SessionBridgeData) => void;
+  onResume: () => void;
   onExit: () => void;
 }
 
 export function SetupPanel({
+  savedSession,
   onSessionStarted,
+  onResume,
   onExit,
 }: SetupPanelProps) {
   const [vocabInfo, setVocabInfo] = useState({ tech: 0, culture: 0 });
@@ -58,7 +62,6 @@ export function SetupPanel({
       if (res.success) {
         onSessionStarted({
           sessionId: res.data.session.id,
-          sessionStartTime: new Date(res.data.session.created_at).getTime(),
           reviewQueue: res.data.vocabList,
         });
       } else {
@@ -85,6 +88,27 @@ export function SetupPanel({
           <X className="w-6 h-6" />
         </button>
       </div>
+
+      {savedSession && (
+        <div className="mb-8 p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-indigo-800">
+              Unfinished session
+            </p>
+            <p className="text-xs text-indigo-500 mt-0.5">
+              {savedSession.currentIndex} / {savedSession.reviewQueue.length}{" "}
+              words completed
+            </p>
+          </div>
+          <button
+            onClick={onResume}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shrink-0"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Resume
+          </button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">

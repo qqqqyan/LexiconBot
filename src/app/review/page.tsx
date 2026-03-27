@@ -1,54 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { VocabListItem } from "@/types";
 import { X } from "lucide-react";
-import { ReviewResult, ReviewStep, SessionBridgeData } from "./type";
+import { completeSessionAction } from "@/actions/review";
+import { useReviewSession } from "./hooks/useReviewSession";
 import { SetupPanel } from "./components/SetupPanel";
 import { ReviewPanel } from "./components/ReviewPanel";
 import { SummaryPanel } from "./components/SummaryPanel";
 
 export default function ReviewPage() {
   const router = useRouter();
-
-  // orchestrator state
-  const [step, setStep] = useState<ReviewStep>("setup");
-
-  // Setup → Review bridge
-  const [sessionId, setSessionId] = useState<string>();
-  const [sessionStartTime, setSessionStartTime] = useState(0);
-  const [reviewQueue, setReviewQueue] = useState<VocabListItem[]>([]);
-
-  // Review → Summary bridge
-  const [results, setResults] = useState<ReviewResult[]>([]);
-  const [totalDuration, setTotalDuration] = useState(0);
+  const { state, dispatch, savedSession } = useReviewSession();
 
   const onExit = () => router.push("/");
-
-  const onRestart = () => setStep("setup");
-
-  const handleSessionStarted = ({
-    sessionId,
-    sessionStartTime,
-    reviewQueue,
-  }: SessionBridgeData) => {
-    setSessionId(sessionId);
-    setSessionStartTime(sessionStartTime);
-    setReviewQueue(reviewQueue);
-    setStep("review");
-  };
-
-  const handleReviewComplete = (results: ReviewResult[], duration: number) => {
-    setResults(results);
-    setTotalDuration(duration);
-    setStep("summary");
-  };
+  const onRestart = () => dispatch({ type: "RESTART" });
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-50 overflow-y-auto custom-scrollbar">
       <div className="min-h-screen flex flex-col">
-        {step !== "setup" && (
+        {state.step !== "setup" && (
           <div className="p-4 flex justify-between items-center max-w-7xl mx-auto w-full">
             <div className="font-bold text-slate-400 text-sm uppercase tracking-wider">
               Review Session
@@ -63,24 +33,47 @@ export default function ReviewPage() {
         )}
 
         <div className="flex-1 flex items-center justify-center p-4 md:p-8">
-          {step === "setup" && (
+          {state.step === "setup" && (
             <SetupPanel
-              onSessionStarted={handleSessionStarted}
+              savedSession={savedSession}
+              onSessionStarted={(data) =>
+                dispatch({ type: "START_SESSION", payload: data })
+              }
+              onResume={() =>
+                savedSession &&
+                dispatch({ type: "RESTORE", payload: savedSession })
+              }
               onExit={onExit}
             />
           )}
-          {step === "review" && (
+          {state.step === "review" && (
             <ReviewPanel
-              reviewQueue={reviewQueue}
-              sessionId={sessionId}
-              sessionStartTime={sessionStartTime}
-              onComplete={handleReviewComplete}
+              reviewQueue={state.reviewQueue}
+              currentIndex={state.currentIndex}
+              elapsedMs={state.elapsedMs}
+              onAnswerWord={(result, elapsedDelta) =>
+                dispatch({ type: "ANSWER_WORD", payload: { ...result, elapsedDelta } })
+              }
+              onDrawerClose={(elapsedDelta) =>
+                dispatch({ type: "UPDATE_ELAPSED", payload: { elapsedDelta } })
+              }
+              onComplete={(duration) => {
+                if (state.sessionId) {
+                  completeSessionAction(state.sessionId, duration).catch(
+                    () => {}
+                  );
+                }
+                dispatch({
+                  type: "COMPLETE_SESSION",
+                  payload: { totalDuration: duration },
+                });
+              }}
             />
           )}
-          {step === "summary" && (
+          {state.step === "summary" && (
             <SummaryPanel
-              results={results}
-              totalDuration={totalDuration}
+              results={state.results}
+              totalDuration={state.totalDuration}
               onRestart={onRestart}
               onExit={onExit}
             />
