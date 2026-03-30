@@ -19,6 +19,7 @@ https://github.com/user-attachments/assets/5b3a3274-a474-43f8-a4d1-b89fa52dc148
   - [Feature] 集成 Dify API 实现词汇与语境的自动生成。
   - [Infra] 搭建 Supabase 后端。
   - [UI] 完成响应式侧边栏与 Markdown 详情展示。
+  <img width="1661" height="868" alt="culture" src="https://github.com/user-attachments/assets/a8a254af-fa2d-4e09-ba49-877f9fd31afb" />
 
 - **v0.2.0 (2026-02-04)**
   - [Feature] 新增异常管理，实施双层错误处理架构。
@@ -28,6 +29,7 @@ https://github.com/user-attachments/assets/5b3a3274-a474-43f8-a4d1-b89fa52dc148
 
 - **v0.3.0 (2026-02-04)**
   - [Feature] 引入技术模式，针对技术专有名词提供 ELI5 解释、职场场景模拟等。
+  <img width="1646" height="867" alt="tech" src="https://github.com/user-attachments/assets/07d241fd-b2b7-4315-906f-ada5abb8f982" />
 
 - **v0.4.0 (2026-02-04)**
   - [Infra] 部署到 Vercel，并控制访问。
@@ -40,6 +42,7 @@ https://github.com/user-attachments/assets/5b3a3274-a474-43f8-a4d1-b89fa52dc148
   - [Feature] 新增复习 Session 功能，支持序列或者随机选择单词进入复习流程。
   - [Structure] 词汇相关页面迁移至 `(vacab)` 路由组，新增独立 `/review` 路由。
   - [Refactor] 抽取 `WordDetail` 为共享组件，供词汇页与复习页复用。
+  <img width="1653" height="865" alt="review-setup" src="https://github.com/user-attachments/assets/0139f6ea-5972-4d77-b191-8f5020e056af" />
 
 - **v0.7.0 (2026-03-15)**
   - [Refactor] 拆分 `VocabView` 为 `LeftSidebar`、`RightPanel`、`WordItem` 三层组件边界。
