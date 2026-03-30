@@ -1,8 +1,10 @@
 # LexiconBot
 
 基于 Next.js 和 Dify 工作流 构建的英语词汇深度学习系统。通过 AI 生成跨文化语境模拟，帮助学习者理解单词在西方社会中的实际逻辑和应用潜台词。
+复习模式，帮助学习者对已添加的单词进行复习。
 
-https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
+https://github.com/user-attachments/assets/5b3a3274-a474-43f8-a4d1-b89fa52dc148
+
 
 ## Getting Started
 
