@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_cache, revalidateTag } from "next/cache";
 import { fetchWordByType } from "@/services/dify";
 import { AppError } from "@/lib/errors";
 import {
@@ -14,10 +15,28 @@ import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { success, failure } from "./type";
 import { ReviewStatusValue, VocabEntryDTO, VocabType } from "@/types";
 
+const getCachedVocabList = unstable_cache(
+  (type: VocabType) => getVocabListService(type),
+  ["vocab-list"],
+  { tags: ["vocab-list"], revalidate: false },
+);
+
+const getCachedVocabDetail = unstable_cache(
+  (id: number) => getVocabByIdService(id),
+  ["vocab-detail"],
+  { tags: ["vocab-detail"], revalidate: false },
+);
+
+const getCachedVocabListInfo = unstable_cache(
+  () => getVocabListInfoService(),
+  ["vocab-list-info"],
+  { tags: ["vocab-list-info"], revalidate: false },
+);
+
 // 获取vocab列表
 export async function fetchVocabListAction(type: VocabType) {
   try {
-    const data = await getVocabListService(type);
+    const data = await getCachedVocabList(type);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -30,7 +49,7 @@ export async function fetchVocabListAction(type: VocabType) {
 // 获取单个vocab详情
 export async function fetchVocabDetailAction(id: number) {
   try {
-    const data = await getVocabByIdService(id);
+    const data = await getCachedVocabDetail(id);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -74,7 +93,11 @@ export async function processVocabAction(word: string, type: VocabType) {
     const correctedWord = aiData.corrected_word || word;
     const wordData = await saveWordToDb(correctedWord, type, aiData.content);
 
-    // 4. 返回
+    // 4. 失效列表缓存
+    revalidateTag("vocab-list");
+    revalidateTag("vocab-list-info");
+
+    // 5. 返回
     WordDataDTO = {
       meta: {
         status: aiData.status,
@@ -95,7 +118,7 @@ export async function processVocabAction(word: string, type: VocabType) {
 // 获取vocab列表信息
 export async function fetchVocabListInfoAction() {
   try {
-    const data = await getVocabListInfoService();
+    const data = await getCachedVocabListInfo();
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {

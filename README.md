@@ -53,3 +53,7 @@ https://github.com/user-attachments/assets/9d264b01-64d1-4415-8d9f-be48766f7227
   - [Refactor] `ReviewPanel` 内化 `currentIndex`、`isDrawerOpen` 状态，以 `useRef` 累积 results（不触发 re-render），review 结束时一次性通过 `onComplete` 回传。
   - [Refactor] `SummaryPanel` 为纯展示组件，以 `useMemo` 计算统计数据。
   - [Type] 新增 `ReviewResult`、`SessionBridgeData` 类型；移除仅在 `SetupPanel` 内部使用的 `StartConfig`。
+
+- **v0.9.0 (2026-03-30)**
+  - [Perf] 使用 `unstable_cache` 对 vocab 列表、详情、count 及 story 列表、详情实施服务端持久缓存，消除重复 Supabase 查询。
+  - [Perf] 写操作（新增词汇、生成故事）后调用 `revalidateTag` 精确失效对应缓存分区，保持数据一致性。

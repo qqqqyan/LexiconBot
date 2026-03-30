@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_cache, revalidateTag } from "next/cache";
 import { generateStoryFromDify } from "@/services/dify";
 import {
   getStoryListService,
@@ -11,10 +12,22 @@ import { AppError } from "@/lib/errors";
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { success, failure } from "./type";
 
+const getCachedStoryList = unstable_cache(
+  () => getStoryListService(),
+  ["story-list"],
+  { tags: ["story-list"], revalidate: false },
+);
+
+const getCachedStoryDetail = unstable_cache(
+  (id: number) => getStoryByIdService(id),
+  ["story-detail"],
+  { tags: ["story-detail"], revalidate: false },
+);
+
 // 获取故事列表
 export async function fetchStoryListAction() {
   try {
-    const data = await getStoryListService();
+    const data = await getCachedStoryList();
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -27,7 +40,7 @@ export async function fetchStoryListAction() {
 // 获取单个故事详情
 export async function fetchStoryDetailAction(id: number) {
   try {
-    const data = await getStoryByIdService(id);
+    const data = await getCachedStoryDetail(id);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -74,6 +87,9 @@ export async function generateAndSaveStoryAction(selectedWordIds: number[]) {
       selectedWordIds,
       wordStrings,
     );
+
+    // E. 失效列表缓存
+    revalidateTag("story-list");
 
     return success(savedStory);
   } catch (error) {
