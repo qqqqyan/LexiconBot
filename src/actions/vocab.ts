@@ -94,8 +94,8 @@ export async function processVocabAction(word: string, type: VocabType) {
     const wordData = await saveWordToDb(correctedWord, type, aiData.content);
 
     // 4. 失效列表缓存
-    revalidateTag("vocab-list");
-    revalidateTag("vocab-list-info");
+    revalidateTag("vocab-list", "max");
+    revalidateTag("vocab-list-info", "max");
 
     // 5. 返回
     WordDataDTO = {

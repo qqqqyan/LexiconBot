@@ -89,7 +89,7 @@ export async function generateAndSaveStoryAction(selectedWordIds: number[]) {
     );
 
     // E. 失效列表缓存
-    revalidateTag("story-list");
+    revalidateTag("story-list", "max");
 
     return success(savedStory);
   } catch (error) {
