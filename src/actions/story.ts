@@ -11,9 +11,10 @@ import { supabaseServer } from "@/lib/supabase";
 import { AppError } from "@/lib/errors";
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { success, failure } from "./type";
+import { getSessionUserId } from "@/lib/session";
 
 const getCachedStoryList = unstable_cache(
-  () => getStoryListService(),
+  (userId: string) => getStoryListService(userId),
   ["story-list"],
   { tags: ["story-list"], revalidate: false },
 );
@@ -24,10 +25,10 @@ const getCachedStoryDetail = unstable_cache(
   { tags: ["story-detail"], revalidate: false },
 );
 
-// 获取故事列表
 export async function fetchStoryListAction() {
   try {
-    const data = await getCachedStoryList();
+    const userId = await getSessionUserId();
+    const data = await getCachedStoryList(userId);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -37,7 +38,6 @@ export async function fetchStoryListAction() {
   }
 }
 
-// 获取单个故事详情
 export async function fetchStoryDetailAction(id: number) {
   try {
     const data = await getCachedStoryDetail(id);
@@ -50,9 +50,10 @@ export async function fetchStoryDetailAction(id: number) {
   }
 }
 
-// 生成并保存故事
 export async function generateAndSaveStoryAction(selectedWordIds: number[]) {
   try {
+    const userId = await getSessionUserId();
+
     // A. 预处理：根据 ID 查出单词原文 (Word Strings)
     // 不信任前端传来的字符串
     const { data: wordsData } = await supabaseServer
@@ -86,6 +87,7 @@ export async function generateAndSaveStoryAction(selectedWordIds: number[]) {
       content,
       selectedWordIds,
       wordStrings,
+      userId,
     );
 
     // E. 失效列表缓存

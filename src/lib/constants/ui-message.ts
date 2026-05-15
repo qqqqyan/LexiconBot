@@ -9,6 +9,7 @@ export const UI_ERROR_MESSAGES = {
   [DOMAIN_ERRORS.UNKNOWN_ERROR]: "系统开小差了，请稍后再试。",
   [DOMAIN_ERRORS.QUOTA_EXCEEDED]: "今天的生成次数用完啦，休息一下明天再来吧！",
   [DOMAIN_ERRORS.AI_PLUGIN_UNAVAILABLE]: "AI 服务暂时不可用，请稍后再试。",
+  [DOMAIN_ERRORS.AUTH_UNAUTHORIZED]: "登录已过期，请重新登录。",
 
   // --- 2. 单词模块 (Vocabulary) ---
   [DOMAIN_ERRORS.VOCAB_AI_GENERATION_FAILED]: "单词内容生成失败，请稍后再试。",

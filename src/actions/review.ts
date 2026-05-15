@@ -9,18 +9,24 @@ import {
   completeSessionService,
 } from "@/services/sessionDb";
 import { CreateSessionParams } from "@/types";
+import { getSessionUserId } from "@/lib/session";
 
-// 获取复习列表 + 创建复习会话
 export async function startSessionAction(params: CreateSessionParams) {
   try {
+    const userId = await getSessionUserId();
     const { vocabType, reviewParams } = params;
-    const vocabList = await getReviewVocabListService(vocabType, reviewParams);
+    const vocabList = await getReviewVocabListService(
+      userId,
+      vocabType,
+      reviewParams,
+    );
 
     const wordIds = vocabList.map((v) => v.id);
     const session = await createSessionService({
       vocabType,
       mode: reviewParams.reviewMode,
       wordIds,
+      userId,
     });
     return success({ session, vocabList });
   } catch (error) {
@@ -31,7 +37,6 @@ export async function startSessionAction(params: CreateSessionParams) {
   }
 }
 
-// 完成复习会话，标记 session 完成
 export async function completeSessionAction(
   sessionId: string,
   duration: number,

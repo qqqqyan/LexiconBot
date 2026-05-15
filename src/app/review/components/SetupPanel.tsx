@@ -6,6 +6,7 @@ import { VocabType } from "@/types";
 import { fetchVocabListInfoAction } from "@/actions/vocab";
 import { startSessionAction } from "@/actions/review";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
+import { handleActionError } from "@/lib/handleActionError";
 import { toast } from "sonner";
 import { ReviewMode, SessionBridgeData, ReviewInProgress } from "../type";
 
@@ -36,7 +37,7 @@ export function SetupPanel({
     fetchVocabListInfoAction()
       .then((res) => {
         if (res.success) setVocabInfo(res.data);
-        else toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+        else handleActionError(res.errorCode);
       })
       .catch(() => toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR));
   }, []);
@@ -65,7 +66,7 @@ export function SetupPanel({
           reviewQueue: res.data.vocabList,
         });
       } else {
-        toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+        handleActionError(res.errorCode);
         setIsLoading(false);
       }
     } catch {

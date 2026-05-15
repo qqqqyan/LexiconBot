@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, X } from "lucide-react";
 import { fetchStoryDetailAction } from "@/actions/story";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
+import { handleActionError } from "@/lib/handleActionError";
 const ReactMarkdown = dynamic(() => import("react-markdown"));
 
 interface StoryDetailViewProps {
@@ -27,7 +28,7 @@ export default function StoryDetailView({ id }: StoryDetailViewProps) {
           setContent(res.data.content as string);
         } else {
           setIsError(true);
-          toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+          handleActionError(res.errorCode);
         }
       } catch {
         setIsError(true);

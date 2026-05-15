@@ -22,6 +22,7 @@ import { fetchVocabListAction } from "@/actions/vocab";
 import type { StoryListItem, VocabListItem, VocabType } from "@/types";
 import type { AppView, BrowseState } from "../type";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
+import { handleActionError } from "@/lib/handleActionError";
 import AddWordModal from "./AddWordModal";
 import { WordItem } from "./WordItem";
 
@@ -77,7 +78,7 @@ export const LeftSidebar = function LeftSidebar({
       .then((res) => {
         if (isStale) return;
         if (res.success) setWords(res.data);
-        else toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+        else handleActionError(res.errorCode);
       })
       .catch(() => {
         if (!isStale) toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
@@ -99,7 +100,7 @@ export const LeftSidebar = function LeftSidebar({
       .then((res) => {
         if (isStale) return;
         if (res.success) setStories(res.data);
-        else toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+        else handleActionError(res.errorCode);
       })
       .catch(() => {
         if (!isStale) toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);
@@ -158,7 +159,7 @@ export const LeftSidebar = function LeftSidebar({
         setStories((prev) => [res.data, ...prev]);
         setSelectedWordIds(new Set());
       } else {
-        toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+        handleActionError(res.errorCode);
       }
     } catch {
       toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);

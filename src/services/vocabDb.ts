@@ -12,12 +12,17 @@ import {
 
 const VOCAB_TABLE_NAME = process.env.VOCAB_TABLE_NAME || "";
 
-export async function getWordFromDb(word: string, type: VocabType) {
+export async function getWordFromDb(
+  word: string,
+  type: VocabType,
+  userId: string,
+) {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
     .select("*")
     .eq("word", word)
     .eq("type", type)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) throw new SystemError(error);
@@ -44,10 +49,11 @@ export async function saveWordToDb(
   word: string,
   type: VocabType,
   content: WordContent,
+  userId: string,
 ): Promise<VocabEntry> {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
-    .insert([{ word, type, content }])
+    .insert([{ word, type, content, user_id: userId }])
     .select()
     .single();
 
@@ -56,10 +62,11 @@ export async function saveWordToDb(
   return data as VocabEntry;
 }
 
-export async function getVocabListService(type: VocabType) {
+export async function getVocabListService(userId: string, type: VocabType) {
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
     .select("id, word, created_at")
+    .eq("user_id", userId)
     .eq("type", type)
     .order("created_at", { ascending: false });
 
@@ -67,15 +74,17 @@ export async function getVocabListService(type: VocabType) {
   return data;
 }
 
-export async function getVocabListInfoService() {
+export async function getVocabListInfoService(userId: string) {
   const [cultureRes, techRes] = await Promise.all([
     supabaseServer
       .from(VOCAB_TABLE_NAME)
       .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
       .eq("type", "culture"),
     supabaseServer
       .from(VOCAB_TABLE_NAME)
       .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
       .eq("type", "tech"),
   ]);
 
@@ -89,6 +98,7 @@ export async function getVocabListInfoService() {
 }
 
 export async function getReviewVocabListService(
+  userId: string,
   type: VocabType,
   params: ReviewVocabListParams,
 ) {
@@ -96,6 +106,7 @@ export async function getReviewVocabListService(
     const { data, error } = await supabaseServer
       .from(VOCAB_TABLE_NAME)
       .select("id, word, created_at")
+      .eq("user_id", userId)
       .eq("type", type);
 
     if (error) throw new SystemError(error);
@@ -114,6 +125,7 @@ export async function getReviewVocabListService(
   const { data, error } = await supabaseServer
     .from(VOCAB_TABLE_NAME)
     .select("id, word, created_at")
+    .eq("user_id", userId)
     .eq("type", type)
     .order("created_at", { ascending: true })
     .range(start - 1, end - 1); // Supabase uses 0-based indexing

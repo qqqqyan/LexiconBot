@@ -14,9 +14,10 @@ import {
 import { DOMAIN_ERRORS } from "@/lib/constants/domain-errors";
 import { success, failure } from "./type";
 import { ReviewStatusValue, VocabEntryDTO, VocabType } from "@/types";
+import { getSessionUserId } from "@/lib/session";
 
 const getCachedVocabList = unstable_cache(
-  (type: VocabType) => getVocabListService(type),
+  (userId: string, type: VocabType) => getVocabListService(userId, type),
   ["vocab-list"],
   { tags: ["vocab-list"], revalidate: false },
 );
@@ -28,15 +29,15 @@ const getCachedVocabDetail = unstable_cache(
 );
 
 const getCachedVocabListInfo = unstable_cache(
-  () => getVocabListInfoService(),
+  (userId: string) => getVocabListInfoService(userId),
   ["vocab-list-info"],
   { tags: ["vocab-list-info"], revalidate: false },
 );
 
-// 获取vocab列表
 export async function fetchVocabListAction(type: VocabType) {
   try {
-    const data = await getCachedVocabList(type);
+    const userId = await getSessionUserId();
+    const data = await getCachedVocabList(userId, type);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {
@@ -46,7 +47,6 @@ export async function fetchVocabListAction(type: VocabType) {
   }
 }
 
-// 获取单个vocab详情
 export async function fetchVocabDetailAction(id: number) {
   try {
     const data = await getCachedVocabDetail(id);
@@ -59,15 +59,14 @@ export async function fetchVocabDetailAction(id: number) {
   }
 }
 
-// 生成并保存vocab
 export async function processVocabAction(word: string, type: VocabType) {
   try {
-    let WordDataDTO: VocabEntryDTO;
+    const userId = await getSessionUserId();
 
     // 1. 查库
-    const cached = await getWordFromDb(word, type);
+    const cached = await getWordFromDb(word, type, userId);
     if (cached) {
-      WordDataDTO = {
+      const WordDataDTO: VocabEntryDTO = {
         meta: {
           status: "success",
           original_input: cached.word,
@@ -91,14 +90,14 @@ export async function processVocabAction(word: string, type: VocabType) {
 
     // 3. 存库
     const correctedWord = aiData.corrected_word || word;
-    const wordData = await saveWordToDb(correctedWord, type, aiData.content);
+    const wordData = await saveWordToDb(correctedWord, type, aiData.content, userId);
 
     // 4. 失效列表缓存
     revalidateTag("vocab-list", "max");
     revalidateTag("vocab-list-info", "max");
 
     // 5. 返回
-    WordDataDTO = {
+    const WordDataDTO: VocabEntryDTO = {
       meta: {
         status: aiData.status,
         original_input: aiData.original_input,
@@ -115,10 +114,10 @@ export async function processVocabAction(word: string, type: VocabType) {
   }
 }
 
-// 获取vocab列表信息
 export async function fetchVocabListInfoAction() {
   try {
-    const data = await getCachedVocabListInfo();
+    const userId = await getSessionUserId();
+    const data = await getCachedVocabListInfo(userId);
     return success(data);
   } catch (error) {
     if (error instanceof AppError) {

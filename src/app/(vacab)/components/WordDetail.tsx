@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { isCultureContent, isTechContent, WordContent } from "@/types";
 import { fetchVocabDetailAction } from "@/actions/vocab";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
+import { handleActionError } from "@/lib/handleActionError";
 
 interface WordDetailProps {
   id: number;
@@ -32,7 +33,7 @@ export const WordDetail: React.FC<WordDetailProps> = ({ id }) => {
         if (res.success) {
           setWordData(res.data.content);
         } else {
-          toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+          handleActionError(res.errorCode);
         }
       } catch {
         toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);

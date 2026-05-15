@@ -5,10 +5,11 @@ import { SUPABASE_CODES } from "@/lib/constants/vendor-codes";
 
 const STORY_TABLE_NAME = process.env.STORY_TABLE_NAME || "";
 
-export async function getStoryListService() {
+export async function getStoryListService(userId: string) {
   const { data, error } = await supabaseServer
     .from(STORY_TABLE_NAME)
     .select("id, title, created_at, word_list")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) throw new SystemError(error);
@@ -36,6 +37,7 @@ export async function saveStoryService(
   content: string,
   wordIds: number[],
   wordList: string[],
+  userId: string,
 ) {
   const { data, error } = await supabaseServer
     .from(STORY_TABLE_NAME)
@@ -45,6 +47,7 @@ export async function saveStoryService(
         content,
         word_ids: wordIds,
         word_list: wordList,
+        user_id: userId,
       },
     ])
     .select()

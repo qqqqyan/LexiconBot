@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { processVocabAction } from "@/actions/vocab";
 import { UI_ERROR_MESSAGES } from "@/lib/constants/ui-message";
+import { handleActionError } from "@/lib/handleActionError";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { VocabListItem, VocabType } from "@/types/vocab";
 
@@ -48,7 +49,7 @@ export const AddWordModal: React.FC<Props> = ({
         onAddWordSuccess(data);
         setNewWordInput("");
       } else {
-        toast.error(UI_ERROR_MESSAGES[res.errorCode]);
+        handleActionError(res.errorCode);
       }
     } catch {
       toast.error(UI_ERROR_MESSAGES.UI_NETWORK_ERROR);

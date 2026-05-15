@@ -5,15 +5,13 @@ import { ReviewMode } from "@/app/review/type";
 
 const SESSION_TABLE_NAME = process.env.REVIEW_SESSION_TABLE_NAME || "";
 
-/**
- * Create a new review session in Supabase
- */
 export async function createSessionService(params: {
   vocabType: VocabType;
   mode: ReviewMode;
   wordIds: string[];
+  userId: string;
 }) {
-  const { vocabType, mode, wordIds } = params;
+  const { vocabType, mode, wordIds, userId } = params;
 
   const { data, error } = await supabaseServer
     .from(SESSION_TABLE_NAME)
@@ -22,6 +20,7 @@ export async function createSessionService(params: {
         vocab_type: vocabType,
         mode: mode,
         word_ids: wordIds,
+        user_id: userId,
       },
     ])
     .select()
@@ -32,9 +31,6 @@ export async function createSessionService(params: {
   return data as ReviewSession;
 }
 
-/**
- * Complete a session with results
- */
 export async function completeSessionService(
   sessionId: string,
   duration: number,
